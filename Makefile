@@ -19,3 +19,6 @@ build:
 
 test:
 	npm test
+
+test-coverage:#initilizing test-coverage
+	npm test -- --coverage --coverageProvider=v8

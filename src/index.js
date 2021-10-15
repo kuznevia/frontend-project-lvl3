@@ -1,3 +1,4 @@
+import init from './init.js';
 import './style.css';
 
-console.log('Hello World!!!!!!!!!!!!');
+init();
