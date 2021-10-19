@@ -2,3 +2,4 @@
 *.log
 dist
 assets
+__tests__
