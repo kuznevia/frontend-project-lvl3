@@ -1,4 +1,5 @@
 import onChange from 'on-change';
+import i18next from 'i18next';
 import _ from 'lodash';
 
 const state = {
@@ -19,21 +20,20 @@ const changeFeedBack = {
 
 const watchedState = onChange(state, (path, value, previousValue, applyData) => {
   if (path === 'errors') {
-    console.log(value);
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
-    feedback.textContent = value;
+    feedback.textContent = i18next.t(value);
   }
   if (path === 'urls') {
     if (previousValue.includes(...applyData.args)) {
       const feedback = document.querySelector('.feedback');
       changeFeedBack.danger(feedback);
-      feedback.textContent = 'RSS уже существует';
+      feedback.textContent = i18next.t('RSS уже существует');
       state.urls = _.sortedUniq(state.urls);
     } else {
       const feedback = document.querySelector('.feedback');
       changeFeedBack.succsess(feedback);
-      feedback.textContent = 'RSS успешно добавлен';
+      feedback.textContent = i18next.t('RSS успешно добавлен');
       const form = document.getElementById('rss-form');
       const input = document.getElementById('url-input');
       form.reset();
