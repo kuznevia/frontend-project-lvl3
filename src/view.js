@@ -22,18 +22,18 @@ const watchedState = onChange(state, (path, value, previousValue, applyData) => 
   if (path === 'errors') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
-    feedback.textContent = i18next.t(value);
+    feedback.textContent = i18next.t('submitForm.urlError');
   }
   if (path === 'urls') {
     if (previousValue.includes(...applyData.args)) {
       const feedback = document.querySelector('.feedback');
       changeFeedBack.danger(feedback);
-      feedback.textContent = i18next.t('RSS уже существует');
+      feedback.textContent = i18next.t('submitForm.alreadyExists');
       state.urls = _.sortedUniq(state.urls);
     } else {
       const feedback = document.querySelector('.feedback');
       changeFeedBack.succsess(feedback);
-      feedback.textContent = i18next.t('RSS успешно добавлен');
+      feedback.textContent = i18next.t('submitForm.added');
       const form = document.getElementById('rss-form');
       const input = document.getElementById('url-input');
       form.reset();

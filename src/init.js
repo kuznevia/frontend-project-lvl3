@@ -2,12 +2,23 @@ import * as yup from 'yup';
 import i18next from 'i18next';
 import watch from './view.js';
 
-const schema = yup.string().url('Ссылка должна быть валидным URL');
+const schema = yup.string().url();
 
 const init = () => {
   i18next.init({
     lng: 'ru',
     debug: true,
+    resources: {
+      ru: {
+        translation: {
+          submitForm: {
+            urlError: 'Ссылка должна быть валидным URL',
+            alreadyExists: 'RSS уже существует',
+            added: 'RSS успешно добавлен',
+          },
+        },
+      },
+    },
   });
 
   const form = document.getElementById('rss-form');
