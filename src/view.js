@@ -5,6 +5,8 @@ import _ from 'lodash';
 const state = {
   errors: null,
   urls: [],
+  feeds: [],
+  posts: [],
 };
 
 const changeFeedBack = {

@@ -1,5 +1,6 @@
 import * as yup from 'yup';
 import i18next from 'i18next';
+import axios from 'axios';
 import watch from './view.js';
 
 const schema = yup.string().url();
@@ -32,6 +33,18 @@ const init = () => {
     } catch (error) {
       watch.errors = error.errors;
     }
+    axios.get(url)
+      .then((response) => {
+        const contentType = response.headers['content-type'].split(';')[0];
+        if (!contentType.includes('rss')) {
+          throw new Error('HI THERE!');
+        }
+        const parser = new DOMParser();
+        const xmlString = response.data;
+        const doc1 = parser.parseFromString(xmlString, 'application/xml');
+        console.log(doc1);
+      })
+      .catch(console.log);
   });
 };
 
