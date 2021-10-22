@@ -3,7 +3,10 @@ import i18next from 'i18next';
 import _ from 'lodash';
 
 const state = {
-  errors: null,
+  errors: {
+    notRSS: null,
+    notURL: null,
+  },
   urls: [],
   feeds: [],
   posts: [],
@@ -21,11 +24,18 @@ const changeFeedBack = {
 };
 
 const watchedState = onChange(state, (path, value, previousValue, applyData) => {
-  if (path === 'errors') {
+  if (path === 'errors.notURL') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
     feedback.textContent = i18next.t('submitForm.urlError');
   }
+
+  if (path === 'errors.notRSS') {
+    const feedback = document.querySelector('.feedback');
+    changeFeedBack.danger(feedback);
+    feedback.textContent = i18next.t('submitForm.notRSS');
+  }
+
   if (path === 'urls') {
     if (previousValue.includes(...applyData.args)) {
       const feedback = document.querySelector('.feedback');
@@ -41,6 +51,55 @@ const watchedState = onChange(state, (path, value, previousValue, applyData) => 
       form.reset();
       input.focus();
     }
+  }
+
+  if (path === 'feeds') {
+    const feeds = document.getElementById('feeds');
+    feeds.innerHTML = '';
+    const header = document.createElement('h3');
+    header.textContent = 'Фиды';
+    feeds.append(header);
+    value.forEach((element) => {
+      const title = document.createElement('p');
+      const description = document.createElement('p');
+      title.classList.add('m-0');
+      description.classList.add('m-0');
+      title.innerHTML = `<b>${element.feedTitle}</b>`;
+      description.textContent = element.feedDescription;
+      feeds.append(title);
+      feeds.append(description);
+    });
+  }
+
+  if (path === 'posts') {
+    const posts = document.getElementById('posts');
+    posts.innerHTML = '';
+    const header = document.createElement('h3');
+    header.textContent = 'Посты';
+    posts.append(header);
+    value.forEach((values) => {
+      values.postList.forEach((post) => {
+        const link = document.createElement('a');
+        link.textContent = post.postTitle;
+        link.href = post.postLink;
+        console.log(link);
+        const button = document.createElement('button');
+        button.type = 'submit';
+        button.classList.add('btn');
+        button.classList.add('btn-primary');
+        button.textContent = 'Просмотр';
+        const divRow = document.createElement('div');
+        divRow.classList.add('row');
+        const divCol1 = document.createElement('div');
+        divCol1.classList.add('col');
+        const divCol2 = document.createElement('div');
+        divCol2.classList.add('col');
+        divCol1.append(link);
+        divCol2.append(button);
+        divRow.append(divCol1, divCol2);
+        posts.append(divRow);
+      });
+    });
   }
 });
 
