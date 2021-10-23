@@ -1,9 +1,46 @@
 import * as yup from 'yup';
 import i18next from 'i18next';
 import axios from 'axios';
-import watch from './view.js';
+import watch, { state } from './view.js';
 
 const schema = yup.string().url();
+
+const getRSSFeed = (url) => axios.get(`https://cors-anywhere.herokuapp.com/${url}`);
+
+const parseRSS = (response) => {
+  const parser = new DOMParser();
+  const xmlString = response.data;
+  return parser.parseFromString(xmlString, 'application/xml');
+};
+
+const getFeed = (parsedRSS, url) => {
+  const feedTitle = parsedRSS.firstElementChild.firstElementChild.firstElementChild.textContent;
+  const feedDescription = parsedRSS
+    .firstElementChild.firstElementChild.children[1].textContent;
+  return {
+    feedTitle,
+    feedDescription,
+    url,
+  };
+};
+
+const getPost = (parsedRSS, url) => {
+  const items = parsedRSS.querySelectorAll('item');
+  const postList = Array.from(items).map((item) => {
+    const postTitle = item.querySelector('title').textContent;
+    const postLink = item.querySelector('link').textContent;
+    const postDescription = item.querySelector('description').textContent;
+    return {
+      postTitle,
+      postLink,
+      postDescription,
+    };
+  });
+  return {
+    postList,
+    url,
+  };
+};
 
 const init = () => {
   i18next.init({
@@ -24,49 +61,30 @@ const init = () => {
   });
 
   const form = document.getElementById('rss-form');
-  let id = 1;
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url');
+    if (state.urls.includes(url)) {
+      watch.errors.exists = true;
+      return;
+    }
     try {
       schema.validateSync(url);
-      axios.get(url)
+      getRSSFeed(url)
         .then((response) => {
           const contentType = response.headers['content-type'].split(';')[0];
           if (!contentType.includes('rss')) {
             throw new Error(i18next.t('submitForm.notRSS'));
           }
-          const parser = new DOMParser();
-          const xmlString = response.data;
-          const doc1 = parser.parseFromString(xmlString, 'application/xml');
-          const feedTitle = doc1.firstElementChild.firstElementChild.firstElementChild.textContent;
-          const feedDescription = doc1
-            .firstElementChild.firstElementChild.children[1].textContent;
-          const feed = {
-            feedTitle,
-            feedDescription,
-            id,
-          };
-          const items = doc1.querySelectorAll('item');
-          const postList = Array.from(items).map((item) => {
-            const postTitle = item.querySelector('title').textContent;
-            const postLink = item.querySelector('link').textContent;
-            const postDescription = item.querySelector('description').textContent;
-            return {
-              postTitle,
-              postLink,
-              postDescription,
-            };
-          });
-          const post = {
-            postList,
-            id,
-          };
+          const parsedRSS = parseRSS(response);
+          const feed = getFeed(parsedRSS, url);
+          const post = getPost(parsedRSS, url);
+          console.log(post);
+          console.log('first');
           watch.urls.push(url);
           watch.feeds.push(feed);
           watch.posts.push(post);
-          id += 1;
         })
         .catch((error) => {
           watch.errors.notRSS = error.message;
@@ -75,6 +93,30 @@ const init = () => {
     } catch (error) {
       watch.errors.notURL = error.errors;
     }
+  });
+  // находить уникальные научился, осталось
+  // понять как добавлять их в state, при этом оставляя предыдущие
+  const refresher = document.getElementById('refresh');
+  refresher.addEventListener('click', () => {
+    state.urls.forEach((url) => {
+      getRSSFeed(url)
+        .then((response) => {
+          const parsedRSS = parseRSS(response);
+          const post = getPost(parsedRSS, url);
+          const targetPost = state.posts.filter((node) => node.url === post.url);
+          const uniquePosts = post.postList.reduce((acc, node) => {
+            const newPost = targetPost[0].postList
+              .filter((targetNode) => targetNode.postTitle === node.postTitle);
+            if (newPost.length === 0) {
+              acc.push(node);
+            }
+            return acc;
+          }, []);
+          console.log(uniquePosts);
+          console.log(post);
+          console.log('second');
+        });
+    });
   });
 };
 

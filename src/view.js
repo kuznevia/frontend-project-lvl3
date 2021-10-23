@@ -1,11 +1,11 @@
 import onChange from 'on-change';
 import i18next from 'i18next';
-import _ from 'lodash';
 
-const state = {
+export const state = {
   errors: {
     notRSS: null,
     notURL: null,
+    exists: false,
   },
   urls: [],
   feeds: [],
@@ -23,7 +23,7 @@ const changeFeedBack = {
   },
 };
 
-const watchedState = onChange(state, (path, value, previousValue, applyData) => {
+const watchedState = onChange(state, (path, value) => {
   if (path === 'errors.notURL') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
@@ -36,21 +36,20 @@ const watchedState = onChange(state, (path, value, previousValue, applyData) => 
     feedback.textContent = i18next.t('submitForm.notRSS');
   }
 
+  if (path === 'errors.exists') {
+    const feedback = document.querySelector('.feedback');
+    changeFeedBack.danger(feedback);
+    feedback.textContent = i18next.t('submitForm.alreadyExists');
+  }
+
   if (path === 'urls') {
-    if (previousValue.includes(...applyData.args)) {
-      const feedback = document.querySelector('.feedback');
-      changeFeedBack.danger(feedback);
-      feedback.textContent = i18next.t('submitForm.alreadyExists');
-      state.urls = _.sortedUniq(state.urls);
-    } else {
-      const feedback = document.querySelector('.feedback');
-      changeFeedBack.succsess(feedback);
-      feedback.textContent = i18next.t('submitForm.added');
-      const form = document.getElementById('rss-form');
-      const input = document.getElementById('url-input');
-      form.reset();
-      input.focus();
-    }
+    const feedback = document.querySelector('.feedback');
+    changeFeedBack.succsess(feedback);
+    feedback.textContent = i18next.t('submitForm.added');
+    const form = document.getElementById('rss-form');
+    const input = document.getElementById('url-input');
+    form.reset();
+    input.focus();
   }
 
   if (path === 'feeds') {
@@ -82,7 +81,6 @@ const watchedState = onChange(state, (path, value, previousValue, applyData) => 
         const link = document.createElement('a');
         link.textContent = post.postTitle;
         link.href = post.postLink;
-        console.log(link);
         const button = document.createElement('button');
         button.type = 'submit';
         button.classList.add('btn');
