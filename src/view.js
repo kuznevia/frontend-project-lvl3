@@ -81,6 +81,12 @@ const watchedState = onChange(state, (path, value) => {
         const link = document.createElement('a');
         link.textContent = post.postTitle;
         link.href = post.postLink;
+        link.classList.add('fw-bold');
+        // завязать нажатие кнопки с конкретным постом, и при нажатии менять,
+        // в стейте read с фолс на тру
+        // выше на этапе присвоения классов узнавать
+        // у стейта свойство read и добавлять соотвествуйющий класс
+        // осталось только всплывающее окно научиться выводить
         const button = document.createElement('button');
         button.type = 'submit';
         button.classList.add('btn');

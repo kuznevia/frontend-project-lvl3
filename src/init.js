@@ -5,7 +5,7 @@ import watch, { state } from './view.js';
 
 const schema = yup.string().url();
 
-const getRSSFeed = (url) => axios.get(`https://cors-anywhere.herokuapp.com/${url}`);
+const getRSSFeed = (url) => axios.get(`https://hexlet-allorigins.herokuapp.com/raw?url=${url}`);
 
 const parseRSS = (response) => {
   const parser = new DOMParser();
@@ -34,6 +34,7 @@ const getPost = (parsedRSS, url) => {
       postTitle,
       postLink,
       postDescription,
+      read: false,
     };
   });
   return {
