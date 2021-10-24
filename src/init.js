@@ -42,6 +42,33 @@ const getPost = (parsedRSS, url) => {
   };
 };
 
+const refreshRSSFeed = () => {
+  state.urls.forEach((url) => {
+    getRSSFeed(url)
+      .then((response) => {
+        const parsedRSS = parseRSS(response);
+        const post = getPost(parsedRSS, url);
+        const targetPost = state.posts.filter((node) => node.url === post.url);
+        const uniquePosts = post.postList.reduce((acc, node) => {
+          const newPost = targetPost[0].postList
+            .filter((targetNode) => targetNode.postTitle === node.postTitle);
+          if (newPost.length === 0) {
+            acc.push(node);
+          }
+          return acc;
+        }, []);
+        if (uniquePosts.length > 0) {
+          const newPosts = { postList: uniquePosts, url };
+          watch.posts.unshift(newPosts);
+        } else {
+          console.log('nothing to refresh');
+        }
+        console.log('refresh finished');
+      })
+      .then(() => setTimeout(() => refreshRSSFeed(), 5000));
+  });
+};
+
 const init = () => {
   i18next.init({
     lng: 'ru',
@@ -80,12 +107,11 @@ const init = () => {
           const parsedRSS = parseRSS(response);
           const feed = getFeed(parsedRSS, url);
           const post = getPost(parsedRSS, url);
-          console.log(post);
-          console.log('first');
           watch.urls.push(url);
           watch.feeds.push(feed);
           watch.posts.push(post);
         })
+        .then(() => setTimeout(() => refreshRSSFeed(), 5000))
         .catch((error) => {
           watch.errors.notRSS = error.message;
           console.log(error.message);
@@ -93,30 +119,6 @@ const init = () => {
     } catch (error) {
       watch.errors.notURL = error.errors;
     }
-  });
-  // находить уникальные научился, осталось
-  // понять как добавлять их в state, при этом оставляя предыдущие
-  const refresher = document.getElementById('refresh');
-  refresher.addEventListener('click', () => {
-    state.urls.forEach((url) => {
-      getRSSFeed(url)
-        .then((response) => {
-          const parsedRSS = parseRSS(response);
-          const post = getPost(parsedRSS, url);
-          const targetPost = state.posts.filter((node) => node.url === post.url);
-          const uniquePosts = post.postList.reduce((acc, node) => {
-            const newPost = targetPost[0].postList
-              .filter((targetNode) => targetNode.postTitle === node.postTitle);
-            if (newPost.length === 0) {
-              acc.push(node);
-            }
-            return acc;
-          }, []);
-          console.log(uniquePosts);
-          console.log(post);
-          console.log('second');
-        });
-    });
   });
 };
 
