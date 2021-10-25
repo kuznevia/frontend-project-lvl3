@@ -5,33 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   </head>
   <body>
-    <div class="container-fluid">
-      <div class="row bg-dark">
-        <div class="col d-flex flex-column align-items-center">
-          <div class="col">
-            <h1 class="text-white fw-light">RSS агрегатор</h1>
-            <h5 class="text-white fw-light">Начни читать RSS сегодня! Это легко, это красиво!</h5>
-            <form id="rss-form" class="" action="">
-              <div class="row">
-                <div class="col">
-                  <input id="url-input" autofocus required name="url" class="form-control w-100" placeholder="Ссылка RSS" autocomplete="off">
-                </div>
-                <div class="col">
-                  <button type="submit" class="btn btn-primary">Добавить</button>
-                  <button id='refresh' type="button" class="btn btn-primary">Обновить</button>
-                </div>
-                <p class="mt-2 mb-0 text-muted">Пример: https://ru.hexlet.io/lessons.rss</p>
-                <p class="feedback m-0 small text-danger"></p>
-              </div>
-            </form>
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            ASDFASD
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
           </div>
         </div>
       </div>
-      <div class="row">
-        <div id="posts" class="col">
+    </div> 
+    <main>
+      <div class="container-fluid">
+        <div class="row bg-dark">
+          <div class="col d-flex flex-column align-items-center">
+            <div class="col">
+              <h1 class="text-white fw-light">RSS агрегатор</h1>
+              <h5 class="text-white fw-light">Начни читать RSS сегодня! Это легко, это красиво!</h5>
+              <form id="rss-form" class="" action="">
+                <div class="row">
+                  <div class="col">
+                    <input id="url-input" autofocus required name="url" class="form-control w-100" placeholder="Ссылка RSS" autocomplete="off">
+                  </div>
+                  <div class="col">
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                  </div>
+                  <p class="mt-2 mb-0 text-muted">Пример: https://ru.hexlet.io/lessons.rss</p>
+                  <p class="feedback m-0 small text-danger"></p>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
-        <div id="feeds" class="col">
+        <div class="row">
+          <div id="posts" class="col">
+          </div>
+          <div id="feeds" class="col">
+          </div>
         </div>
-    </div>
+      </div>
+    </main>
   </body>
 </html>

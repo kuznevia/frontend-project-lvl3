@@ -81,16 +81,19 @@ const watchedState = onChange(state, (path, value) => {
         const link = document.createElement('a');
         link.textContent = post.postTitle;
         link.href = post.postLink;
-        link.classList.add('fw-bold');
-        // завязать нажатие кнопки с конкретным постом, и при нажатии менять,
-        // в стейте read с фолс на тру
-        // выше на этапе присвоения классов узнавать
-        // у стейта свойство read и добавлять соотвествуйющий класс
-        // осталось только всплывающее окно научиться выводить
+        if (post.read === false) {
+          link.classList.add('fw-bold');
+          link.classList.remove('fw-normal');
+        } else {
+          link.classList.add('fw-normal');
+          link.classList.remove('fw-bold');
+        }
         const button = document.createElement('button');
-        button.type = 'submit';
+        button.type = 'button';
         button.classList.add('btn');
-        button.classList.add('btn-primary');
+        button.classList.add('btn-info');
+        button.dataset.bsToggle = 'modal';
+        button.dataset.bsTarget = '#exampleModal';
         button.textContent = 'Просмотр';
         const divRow = document.createElement('div');
         divRow.classList.add('row');
@@ -102,6 +105,21 @@ const watchedState = onChange(state, (path, value) => {
         divCol2.append(button);
         divRow.append(divCol1, divCol2);
         posts.append(divRow);
+      });
+    });
+    const infoButtons = document.querySelectorAll('.btn-info');
+    infoButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const parentRaw = button.parentNode.parentNode;
+        const link = parentRaw.querySelector('a');
+        const title = link.textContent;
+        watchedState.posts.forEach((post) => {
+          post.postList.forEach((list) => {
+            if (list.postTitle === title) {
+              list.read = true;
+            }
+          });
+        });
       });
     });
   }
