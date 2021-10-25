@@ -88,8 +88,7 @@ const init = () => {
     },
   });
 
-  const form = document.getElementById('rss-form');
-  form.addEventListener('submit', (e) => {
+  document.getElementById('rss-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url');
