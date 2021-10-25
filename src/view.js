@@ -117,6 +117,13 @@ const watchedState = onChange(state, (path, value) => {
           post.postList.forEach((list) => {
             if (list.postTitle === title) {
               list.read = true;
+              const modalHeader = document.getElementById('exampleModalLabel');
+              const modalBody = document.querySelector('.modal-body');
+              const modalLink = document.querySelector('.modal-link');
+              modalHeader.textContent = list.postTitle;
+              modalBody.textContent = list.postDescription;
+              modalLink.href = list.postLink;
+              console.log(list);
             }
           });
         });
