@@ -53,9 +53,8 @@ const createInfoButtonsEvent = (state) => {
       state.posts.forEach((post) => {
         post.postList.forEach((list) => {
           if (list.postTitle === title) {
-            console.log(list.read);
             list.read = true;
-            console.log(list.read);
+            console.log(list);
             const modalHeader = document.getElementById('exampleModalLabel');
             const modalBody = document.querySelector('.modal-body');
             const modalLink = document.querySelector('.modal-link');
@@ -87,11 +86,8 @@ const refreshRSSFeed = (state) => {
         if (uniquePosts.length > 0) {
           const newPosts = { postList: uniquePosts, url };
           state.posts.unshift(newPosts);
-        } else {
-          console.log('nothing to refresh');
         }
         createInfoButtonsEvent(state);
-        console.log('refresh finished');
       })
       .then(() => setTimeout(() => refreshRSSFeed(state), 5000));
   });
@@ -128,7 +124,7 @@ const init = () => {
 
   const watchedState = watch(state);
 
-  const form = document.querySelector('#rss-form');
+  const form = document.body.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
