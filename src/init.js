@@ -128,7 +128,7 @@ const init = () => {
 
   const watchedState = watch(state);
 
-  const form = document.getElementById('rss-form');
+  const form = document.querySelector('#form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
