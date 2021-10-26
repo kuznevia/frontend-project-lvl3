@@ -115,6 +115,12 @@ const init = () => {
     },
   });
 
+  const elements = {
+    form: document.querySelector('#rss-form'),
+  };
+
+  const { form } = elements;
+
   const state = {
     errors: {
       notRSS: null,
@@ -128,7 +134,6 @@ const init = () => {
 
   const watchedState = watch(state);
 
-  const form = document.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
