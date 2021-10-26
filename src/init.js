@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 import i18next from 'i18next';
 import axios from 'axios';
-import watch, { state } from './view.js';
+import watch from './view.js';
 
 const schema = yup.string().url();
 
@@ -43,7 +43,33 @@ const getPost = (parsedRSS, url) => {
   };
 };
 
-const refreshRSSFeed = () => {
+const createInfoButtonsEvent = (state) => {
+  const infoButtons = document.querySelectorAll('.btn-info');
+  infoButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const parentRaw = button.parentNode.parentNode;
+      const link = parentRaw.querySelector('a');
+      const title = link.textContent;
+      state.posts.forEach((post) => {
+        post.postList.forEach((list) => {
+          if (list.postTitle === title) {
+            console.log(list.read);
+            list.read = true;
+            console.log(list.read);
+            const modalHeader = document.getElementById('exampleModalLabel');
+            const modalBody = document.querySelector('.modal-body');
+            const modalLink = document.querySelector('.modal-link');
+            modalHeader.textContent = list.postTitle;
+            modalBody.textContent = list.postDescription;
+            modalLink.href = list.postLink;
+          }
+        });
+      });
+    });
+  });
+};
+
+const refreshRSSFeed = (state) => {
   state.urls.forEach((url) => {
     getRSSFeed(url)
       .then((response) => {
@@ -60,13 +86,14 @@ const refreshRSSFeed = () => {
         }, []);
         if (uniquePosts.length > 0) {
           const newPosts = { postList: uniquePosts, url };
-          watch.posts.unshift(newPosts);
+          state.posts.unshift(newPosts);
         } else {
           console.log('nothing to refresh');
         }
+        createInfoButtonsEvent(state);
         console.log('refresh finished');
       })
-      .then(() => setTimeout(() => refreshRSSFeed(), 5000));
+      .then(() => setTimeout(() => refreshRSSFeed(state), 5000));
   });
 };
 
@@ -88,13 +115,26 @@ const init = () => {
     },
   });
 
+  const state = {
+    errors: {
+      notRSS: null,
+      notURL: null,
+      exists: false,
+    },
+    urls: [],
+    feeds: [],
+    posts: [],
+  };
+
+  const watchedState = watch(state);
+
   const form = document.getElementById('rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url');
     if (state.urls.includes(url)) {
-      watch.errors.exists = true;
+      watchedState.errors.exists = true;
       return;
     }
     try {
@@ -108,17 +148,17 @@ const init = () => {
           const parsedRSS = parseRSS(response);
           const feed = getFeed(parsedRSS, url);
           const post = getPost(parsedRSS, url);
-          watch.urls.push(url);
-          watch.feeds.push(feed);
-          watch.posts.push(post);
+          watchedState.urls.push(url);
+          watchedState.feeds.push(feed);
+          watchedState.posts.push(post);
+          createInfoButtonsEvent(watchedState);
         })
-        .then(() => setTimeout(() => refreshRSSFeed(), 5000))
+        .then(() => setTimeout(() => refreshRSSFeed(watchedState), 5000))
         .catch((error) => {
-          watch.errors.notRSS = error.message;
-          console.log(error.message);
+          watchedState.errors.notRSS = error.message;
         });
     } catch (error) {
-      watch.errors.notURL = error.errors;
+      watchedState.errors.notURL = error.errors;
     }
   });
 };

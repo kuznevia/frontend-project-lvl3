@@ -1,17 +1,6 @@
 import onChange from 'on-change';
 import i18next from 'i18next';
 
-export const state = {
-  errors: {
-    notRSS: null,
-    notURL: null,
-    exists: false,
-  },
-  urls: [],
-  feeds: [],
-  posts: [],
-};
-
 const changeFeedBack = {
   danger: (elem) => {
     elem.classList.remove('text-success');
@@ -23,7 +12,7 @@ const changeFeedBack = {
   },
 };
 
-const watchedState = onChange(state, (path, value) => {
+export default (state) => onChange(state, (path, value) => {
   if (path === 'errors.notURL') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
@@ -107,29 +96,5 @@ const watchedState = onChange(state, (path, value) => {
         posts.append(divRow);
       });
     });
-    const infoButtons = document.querySelectorAll('.btn-info');
-    infoButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const parentRaw = button.parentNode.parentNode;
-        const link = parentRaw.querySelector('a');
-        const title = link.textContent;
-        watchedState.posts.forEach((post) => {
-          post.postList.forEach((list) => {
-            if (list.postTitle === title) {
-              list.read = true;
-              const modalHeader = document.getElementById('exampleModalLabel');
-              const modalBody = document.querySelector('.modal-body');
-              const modalLink = document.querySelector('.modal-link');
-              modalHeader.textContent = list.postTitle;
-              modalBody.textContent = list.postDescription;
-              modalLink.href = list.postLink;
-              console.log(list);
-            }
-          });
-        });
-      });
-    });
   }
 });
-
-export default watchedState;
