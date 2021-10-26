@@ -2,7 +2,7 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "src/init.js",
   "scripts": {
     "test": "jest --colors"
   },
