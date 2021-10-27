@@ -54,7 +54,6 @@ const createInfoButtonsEvent = (state) => {
         post.postList.forEach((list) => {
           if (list.postTitle === title) {
             list.read = true;
-            console.log(list);
             const modalHeader = document.getElementById('exampleModalLabel');
             const modalBody = document.querySelector('.modal-body');
             const modalLink = document.querySelector('.modal-link');
@@ -64,6 +63,7 @@ const createInfoButtonsEvent = (state) => {
           }
         });
       });
+      createInfoButtonsEvent(state);
     });
   });
 };
