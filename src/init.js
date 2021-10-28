@@ -87,10 +87,10 @@ const changeElementsAttributes = (id, attribute) => {
 
 const refreshRSSFeed = (state) => {
   changeElementsAttributes('url-input', 'readonly');
+  changeElementsAttributes('add', 'disabled');
   state.urls.forEach((url) => {
     getRSSFeed(url)
       .then((response) => {
-        changeElementsAttributes('add', 'disabled');
         const parsedRSS = parseRSS(response);
         const post = getPost(parsedRSS, url);
         const targetPost = state.posts.filter((node) => node.url === post.url);
@@ -108,7 +108,10 @@ const refreshRSSFeed = (state) => {
         }
         createInfoButtonsEvent(state);
       })
-      .then(() => changeElementsAttributes('url-input', 'readonly'), changeElementsAttributes('add', 'disabled'))
+      .then(() => {
+        changeElementsAttributes('url-input', 'readonly');
+        changeElementsAttributes('add', 'disabled');
+      })
       .then(() => setTimeout(() => refreshRSSFeed(state), 5000));
   });
 };
@@ -155,10 +158,12 @@ const init = () => {
       return;
     }
     schema.validate(url)
-      .then(() => changeElementsAttributes('url-input', 'readonly'))
+      .then(() => {
+        changeElementsAttributes('url-input', 'readonly');
+        changeElementsAttributes('add', 'disabled');
+      })
       .then(() => getRSSFeed(url))
       .then((response) => {
-        changeElementsAttributes('add', 'disabled');
         const parsedRSS = parseRSS(response);
         const feed = getFeed(parsedRSS, url);
         const post = getPost(parsedRSS, url);
@@ -167,7 +172,10 @@ const init = () => {
         watchedState.posts.unshift(post);
         createInfoButtonsEvent(watchedState);
       })
-      .then(() => changeElementsAttributes('url-input', 'readonly'), changeElementsAttributes('add', 'disabled'))
+      .then(() => {
+        changeElementsAttributes('url-input', 'readonly');
+        changeElementsAttributes('add', 'disabled');
+      })
       .then(() => setTimeout(() => refreshRSSFeed(watchedState), 5000))
       .catch((error) => {
         switch (error.message) {
@@ -181,7 +189,9 @@ const init = () => {
             console.log(error.message);
             watchedState.errors.networkError = error.message;
         }
+        console.log('hehey!');
         changeElementsAttributes('add', 'disabled');
+        changeElementsAttributes('url-input', 'readonly');
       });
   });
 };
