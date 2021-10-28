@@ -82,9 +82,9 @@ const changeElementsState = (id, attribute) => {
 };
 
 const refreshRSSFeed = (state) => {
+  changeElementsState('url-input');
   state.urls.forEach((url) => {
-    changeElementsState('url-input')
-      .then(() => getRSSFeed(url))
+    getRSSFeed(url)
       .then((response) => {
         const parsedRSS = parseRSS(response);
         const post = getPost(parsedRSS, url);
@@ -103,7 +103,7 @@ const refreshRSSFeed = (state) => {
         }
         createInfoButtonsEvent(state);
       })
-      .then(changeElementsState('url-input'))
+      .then(() => changeElementsState('url-input'))
       .then(() => setTimeout(() => refreshRSSFeed(state), 5000));
   });
 };
@@ -143,6 +143,7 @@ const init = () => {
   const form = document.body.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    changeElementsState('url-input');
     const formData = new FormData(e.target);
     const url = formData.get('url');
     if (state.urls.includes(url)) {
@@ -150,15 +151,14 @@ const init = () => {
       return;
     }
     schema.validate(url)
-      .then(() => changeElementsState('url-input'))
       .then(() => getRSSFeed(url))
       .then((response) => {
         const parsedRSS = parseRSS(response);
         const feed = getFeed(parsedRSS, url);
         const post = getPost(parsedRSS, url);
-        watchedState.urls.push(url);
-        watchedState.feeds.push(feed);
-        watchedState.posts.push(post);
+        watchedState.urls.unshift(url);
+        watchedState.feeds.unshift(feed);
+        watchedState.posts.unshift(post);
         createInfoButtonsEvent(watchedState);
       })
       .then(() => changeElementsState('url-input'))
