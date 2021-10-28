@@ -75,19 +75,21 @@ const createInfoButtonsEvent = (state) => {
 const changeElementsAttributes = (id, attribute) => {
   const element = document.getElementById(id);
   if (element.hasAttribute(attribute)) {
-    element.removeAttribute(attribute);
+    console.log(element);
     console.log(true);
+    element.removeAttribute(attribute);
   } else {
-    element.setAttribute(attribute, '');
+    console.log(element);
     console.log(false);
+    element.setAttribute(attribute, '');
   }
 };
 
 const refreshRSSFeed = (state) => {
+  changeElementsAttributes('url-input', 'readonly');
   state.urls.forEach((url) => {
     getRSSFeed(url)
       .then((response) => {
-        changeElementsAttributes('url-input', 'readonly');
         changeElementsAttributes('add', 'disabled');
         const parsedRSS = parseRSS(response);
         const post = getPost(parsedRSS, url);
@@ -153,9 +155,9 @@ const init = () => {
       return;
     }
     schema.validate(url)
+      .then(() => changeElementsAttributes('url-input', 'readonly'))
       .then(() => getRSSFeed(url))
       .then((response) => {
-        changeElementsAttributes('url-input', 'readonly');
         changeElementsAttributes('add', 'disabled');
         const parsedRSS = parseRSS(response);
         const feed = getFeed(parsedRSS, url);
