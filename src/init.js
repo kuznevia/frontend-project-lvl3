@@ -108,6 +108,7 @@ const init = () => {
             urlError: 'Ссылка должна быть валидным URL',
             notRSS: 'Ресурс не содержит валидный RSS',
             alreadyExists: 'RSS уже существует',
+            networkError: 'Ошибка сети',
             added: 'RSS успешно загружен',
           },
         },
@@ -150,11 +151,15 @@ const init = () => {
       })
       .then(() => setTimeout(() => refreshRSSFeed(watchedState), 5000))
       .catch((error) => {
-        if (error.message === 'notRSS') {
-          watchedState.errors.notRSS = error.message;
-        }
-        if (error.message === 'this must be a valid URL') {
-          watchedState.errors.notURL = error.message;
+        switch (error.message) {
+          case 'notRSS':
+            watchedState.errors.notRSS = error.message;
+            break;
+          case 'this must be a valid URL':
+            watchedState.errors.notURL = error.message;
+            break;
+          default:
+            watchedState.errors.networkError = error.message;
         }
       });
   });

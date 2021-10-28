@@ -31,6 +31,12 @@ export default (state) => onChange(state, (path, value) => {
     feedback.textContent = i18next.t('submitForm.alreadyExists');
   }
 
+  if (path === 'errors.networkError') {
+    const feedback = document.querySelector('.feedback');
+    changeFeedBack.danger(feedback);
+    feedback.textContent = i18next.t('submitForm.networkError');
+  }
+
   if (path === 'urls') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.succsess(feedback);
