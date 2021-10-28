@@ -108,7 +108,7 @@ const init = () => {
             urlError: 'Ссылка должна быть валидным URL',
             notRSS: 'Ресурс не содержит валидный RSS',
             alreadyExists: 'RSS уже существует',
-            added: 'RSS успешно добавлен',
+            added: 'RSS успешно загружен',
           },
         },
       },
