@@ -78,7 +78,7 @@ const changeElementsAttributes = (id, attribute) => {
     element.removeAttribute(attribute);
     console.log(element);
   } else {
-    element.setAttribute(attribute, attribute);
+    element.setAttribute(attribute, '');
     console.log(element);
   }
 };
@@ -146,7 +146,6 @@ const init = () => {
   const form = document.body.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    changeElementsAttributes('url-input', 'readonly');
     const formData = new FormData(e.target);
     const url = formData.get('url');
     if (state.urls.includes(url)) {
@@ -154,6 +153,7 @@ const init = () => {
       return;
     }
     schema.validate(url)
+      .then(() => changeElementsAttributes('url-input', 'readonly'))
       .then(() => getRSSFeed(url))
       .then((response) => {
         changeElementsAttributes('add', 'disabled');
@@ -179,6 +179,7 @@ const init = () => {
             console.log(error.message);
             watchedState.errors.networkError = error.message;
         }
+        changeElementsAttributes('add', 'disabled');
       });
   });
 };
