@@ -72,20 +72,23 @@ const createInfoButtonsEvent = (state) => {
   });
 };
 
-const changeElementsState = (id, attribute) => {
+const changeElementsAttributes = (id, attribute) => {
   const element = document.getElementById(id);
   if (element.hasAttribute(attribute)) {
     element.removeAttribute(attribute);
+    console.log(element);
   } else {
     element.setAttribute(attribute, attribute);
+    console.log(element);
   }
 };
 
 const refreshRSSFeed = (state) => {
-  changeElementsState('url-input', 'readonly');
+  changeElementsAttributes('url-input', 'readonly');
   state.urls.forEach((url) => {
     getRSSFeed(url)
       .then((response) => {
+        changeElementsAttributes('add', 'disabled');
         const parsedRSS = parseRSS(response);
         const post = getPost(parsedRSS, url);
         const targetPost = state.posts.filter((node) => node.url === post.url);
@@ -103,7 +106,7 @@ const refreshRSSFeed = (state) => {
         }
         createInfoButtonsEvent(state);
       })
-      .then(() => changeElementsState('url-input', 'readonly'))
+      .then(() => changeElementsAttributes('url-input', 'readonly'), changeElementsAttributes('add', 'disabled'))
       .then(() => setTimeout(() => refreshRSSFeed(state), 5000));
   });
 };
@@ -143,7 +146,7 @@ const init = () => {
   const form = document.body.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    changeElementsState('url-input', 'readonly');
+    changeElementsAttributes('url-input', 'readonly');
     const formData = new FormData(e.target);
     const url = formData.get('url');
     if (state.urls.includes(url)) {
@@ -153,6 +156,7 @@ const init = () => {
     schema.validate(url)
       .then(() => getRSSFeed(url))
       .then((response) => {
+        changeElementsAttributes('add', 'disabled');
         const parsedRSS = parseRSS(response);
         const feed = getFeed(parsedRSS, url);
         const post = getPost(parsedRSS, url);
@@ -161,7 +165,7 @@ const init = () => {
         watchedState.posts.unshift(post);
         createInfoButtonsEvent(watchedState);
       })
-      .then(() => changeElementsState('url-input', 'readonly'))
+      .then(() => changeElementsAttributes('url-input', 'readonly'), changeElementsAttributes('add', 'disabled'))
       .then(() => setTimeout(() => refreshRSSFeed(watchedState), 5000))
       .catch((error) => {
         switch (error.message) {
