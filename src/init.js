@@ -5,12 +5,16 @@ import watch from './view.js';
 
 const schema = yup.string().url();
 
-const getRSSFeed = (url) => axios.get(`https://hexlet-allorigins.herokuapp.com/raw?disableCache=true&url=${url}`);
+const getRSSFeed = (url) => axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`);
 
 const parseRSS = (response) => {
   const parser = new DOMParser();
-  const xmlString = response.data;
-  return parser.parseFromString(xmlString, 'application/xml');
+  const xmlString = response.data.contents;
+  const parsedRSS = parser.parseFromString(xmlString, 'application/xml');
+  if (parsedRSS.querySelector('parsererror') === null) {
+    return parsedRSS;
+  }
+  throw new Error('notRSS');
 };
 
 const getFeed = (parsedRSS, url) => {
@@ -133,29 +137,26 @@ const init = () => {
       watchedState.errors.exists = true;
       return;
     }
-    try {
-      schema.validateSync(url);
-      getRSSFeed(url)
-        .then((response) => {
-          const contentType = response.headers['content-type'].split(';')[0];
-          if (!contentType.includes('rss')) {
-            throw new Error(i18next.t('submitForm.notRSS'));
-          }
-          const parsedRSS = parseRSS(response);
-          const feed = getFeed(parsedRSS, url);
-          const post = getPost(parsedRSS, url);
-          watchedState.urls.push(url);
-          watchedState.feeds.push(feed);
-          watchedState.posts.push(post);
-          createInfoButtonsEvent(watchedState);
-        })
-        .then(() => setTimeout(() => refreshRSSFeed(watchedState), 5000))
-        .catch((error) => {
+    schema.validate(url)
+      .then(() => getRSSFeed(url))
+      .then((response) => {
+        const parsedRSS = parseRSS(response);
+        const feed = getFeed(parsedRSS, url);
+        const post = getPost(parsedRSS, url);
+        watchedState.urls.push(url);
+        watchedState.feeds.push(feed);
+        watchedState.posts.push(post);
+        createInfoButtonsEvent(watchedState);
+      })
+      .then(() => setTimeout(() => refreshRSSFeed(watchedState), 5000))
+      .catch((error) => {
+        if (error.message === 'notRSS') {
           watchedState.errors.notRSS = error.message;
-        });
-    } catch (error) {
-      watchedState.errors.notURL = error.errors;
-    }
+        }
+        if (error.message === 'this must be a valid URL') {
+          watchedState.errors.notURL = error.message;
+        }
+      });
   });
 };
 
