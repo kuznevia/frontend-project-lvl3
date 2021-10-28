@@ -72,9 +72,19 @@ const createInfoButtonsEvent = (state) => {
   });
 };
 
+const changeElementsState = (id, attribute) => {
+  const element = document.getElementById(id);
+  if (element.hasAttribute(attribute)) {
+    element.removeAttribute(attribute);
+  } else {
+    element.setAttribute(attribute, attribute);
+  }
+};
+
 const refreshRSSFeed = (state) => {
   state.urls.forEach((url) => {
-    getRSSFeed(url)
+    changeElementsState('url-input')
+      .then(() => getRSSFeed(url))
       .then((response) => {
         const parsedRSS = parseRSS(response);
         const post = getPost(parsedRSS, url);
@@ -93,6 +103,7 @@ const refreshRSSFeed = (state) => {
         }
         createInfoButtonsEvent(state);
       })
+      .then(changeElementsState('url-input'))
       .then(() => setTimeout(() => refreshRSSFeed(state), 5000));
   });
 };
@@ -139,6 +150,7 @@ const init = () => {
       return;
     }
     schema.validate(url)
+      .then(() => changeElementsState('url-input'))
       .then(() => getRSSFeed(url))
       .then((response) => {
         const parsedRSS = parseRSS(response);
@@ -149,6 +161,7 @@ const init = () => {
         watchedState.posts.push(post);
         createInfoButtonsEvent(watchedState);
       })
+      .then(() => changeElementsState('url-input'))
       .then(() => setTimeout(() => refreshRSSFeed(watchedState), 5000))
       .catch((error) => {
         switch (error.message) {
@@ -159,6 +172,7 @@ const init = () => {
             watchedState.errors.notURL = error.message;
             break;
           default:
+            console.log(error.message);
             watchedState.errors.networkError = error.message;
         }
       });
