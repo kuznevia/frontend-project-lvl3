@@ -82,7 +82,7 @@ const changeElementsState = (id, attribute) => {
 };
 
 const refreshRSSFeed = (state) => {
-  changeElementsState('url-input');
+  changeElementsState('url-input', 'readonly');
   state.urls.forEach((url) => {
     getRSSFeed(url)
       .then((response) => {
@@ -103,7 +103,7 @@ const refreshRSSFeed = (state) => {
         }
         createInfoButtonsEvent(state);
       })
-      .then(() => changeElementsState('url-input'))
+      .then(() => changeElementsState('url-input', 'readonly'))
       .then(() => setTimeout(() => refreshRSSFeed(state), 5000));
   });
 };
@@ -143,7 +143,7 @@ const init = () => {
   const form = document.body.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    changeElementsState('url-input');
+    changeElementsState('url-input', 'readonly');
     const formData = new FormData(e.target);
     const url = formData.get('url');
     if (state.urls.includes(url)) {
@@ -161,7 +161,7 @@ const init = () => {
         watchedState.posts.unshift(post);
         createInfoButtonsEvent(watchedState);
       })
-      .then(() => changeElementsState('url-input'))
+      .then(() => changeElementsState('url-input', 'readonly'))
       .then(() => setTimeout(() => refreshRSSFeed(watchedState), 5000))
       .catch((error) => {
         switch (error.message) {
