@@ -12,6 +12,16 @@ const changeFeedBack = {
   },
 };
 
+const changeElementsAttributes = (id, attribute, status) => {
+  const element = document.getElementById(id);
+  if (status === false) {
+    element.removeAttribute(attribute);
+  }
+  if (status === true) {
+    element.setAttribute(attribute, '');
+  }
+};
+
 export default (state) => onChange(state, (path, value) => {
   if (path === 'errors.notURL') {
     const feedback = document.querySelector('.feedback');
@@ -102,5 +112,13 @@ export default (state) => onChange(state, (path, value) => {
         posts.append(divRow);
       });
     });
+  }
+
+  if (path === 'attributes.urlInputReadonly') {
+    changeElementsAttributes('url-input', 'disabled', value);
+  }
+
+  if (path === 'attributes.addButtonDisabled') {
+    changeElementsAttributes('add', 'readonly', value);
   }
 });

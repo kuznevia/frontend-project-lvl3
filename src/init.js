@@ -5,7 +5,7 @@ import watch from './view.js';
 
 const schema = yup.string().url();
 
-const getRSSFeed = (url) => axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`);
+const getRSSFeedData = (url) => axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`);
 
 const parseRSS = (response) => {
   const parser = new DOMParser();
@@ -17,18 +17,22 @@ const parseRSS = (response) => {
   throw new Error('notRSS');
 };
 
-const getFeed = (parsedRSS, url) => {
+const getFeed = (parsedRSS, url, state) => {
+  if (state.urls.includes(url)) {
+    return;
+  }
   const feedTitle = parsedRSS.firstElementChild.firstElementChild.firstElementChild.textContent;
   const feedDescription = parsedRSS
     .firstElementChild.firstElementChild.children[1].textContent;
-  return {
+  const feed = {
     feedTitle,
     feedDescription,
     url,
   };
+  state.feeds.unshift(feed);
 };
 
-const getPost = (parsedRSS, url) => {
+const getPost = (parsedRSS, url, state) => {
   const items = parsedRSS.querySelectorAll('item');
   const postList = Array.from(items).map((item) => {
     const postTitle = item.querySelector('title').textContent;
@@ -41,10 +45,27 @@ const getPost = (parsedRSS, url) => {
       read: false,
     };
   });
-  return {
+  const post = {
     postList,
     url,
   };
+  const targetPost = state.posts.filter((node) => node.url === post.url);
+  if (targetPost.length === 0) {
+    state.posts.unshift(post);
+  } else {
+    const uniquePosts = post.postList.reduce((acc, node) => {
+      const newPost = targetPost[0].postList
+        .filter((targetNode) => targetNode.postTitle === node.postTitle);
+      if (newPost.length === 0) {
+        acc.push(node);
+      }
+      return acc;
+    }, []);
+    if (uniquePosts.length > 0) {
+      const newPosts = { postList: uniquePosts, url };
+      state.posts.unshift(newPosts);
+    }
+  }
 };
 
 const createInfoButtonsEvent = (state) => {
@@ -72,48 +93,23 @@ const createInfoButtonsEvent = (state) => {
   });
 };
 
-const changeElementsAttributes = (id, attribute) => {
-  const element = document.getElementById(id);
-  if (element.hasAttribute(attribute)) {
-    console.log(element);
-    console.log(true);
-    element.removeAttribute(attribute);
-  } else {
-    console.log(element);
-    console.log(false);
-    element.setAttribute(attribute, '');
-  }
-};
-
-const refreshRSSFeed = (state) => {
-  changeElementsAttributes('url-input', 'readonly');
-  changeElementsAttributes('add', 'disabled');
-  state.urls.forEach((url) => {
-    getRSSFeed(url)
-      .then((response) => {
-        const parsedRSS = parseRSS(response);
-        const post = getPost(parsedRSS, url);
-        const targetPost = state.posts.filter((node) => node.url === post.url);
-        const uniquePosts = post.postList.reduce((acc, node) => {
-          const newPost = targetPost[0].postList
-            .filter((targetNode) => targetNode.postTitle === node.postTitle);
-          if (newPost.length === 0) {
-            acc.push(node);
-          }
-          return acc;
-        }, []);
-        if (uniquePosts.length > 0) {
-          const newPosts = { postList: uniquePosts, url };
-          state.posts.unshift(newPosts);
-        }
-        createInfoButtonsEvent(state);
-      })
-      .then(() => {
-        changeElementsAttributes('url-input', 'readonly');
-        changeElementsAttributes('add', 'disabled');
-      })
-      .then(() => setTimeout(() => refreshRSSFeed(state), 5000));
-  });
+const getRSSFeed = (url, state) => {
+  state.attributes.urlInputReadonly = true;
+  state.attributes.addButtonDisabled = true;
+  return schema.validate(url)
+    .then(() => getRSSFeedData(url))
+    .then((response) => {
+      const parsedRSS = parseRSS(response);
+      getPost(parsedRSS, url, state);
+      getFeed(parsedRSS, url, state);
+      state.urls.unshift(url);
+      createInfoButtonsEvent(state);
+    })
+    .then(() => {
+      state.attributes.urlInputReadonly = false;
+      state.attributes.addButtonDisabled = false;
+      state.form = 'success';
+    });
 };
 
 const init = () => {
@@ -136,10 +132,15 @@ const init = () => {
   });
 
   const state = {
+    form: null,
     errors: {
       notRSS: null,
       notURL: null,
       exists: false,
+    },
+    attributes: {
+      urlInputReadonly: false,
+      addButtonDisabled: false,
     },
     urls: [],
     feeds: [],
@@ -151,33 +152,24 @@ const init = () => {
   const form = document.body.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    watchedState.form = 'filling';
     const formData = new FormData(e.target);
     const url = formData.get('url');
     if (state.urls.includes(url)) {
       watchedState.errors.exists = true;
       return;
     }
-    schema.validate(url)
-      .then(() => {
-        changeElementsAttributes('url-input', 'readonly');
-        changeElementsAttributes('add', 'disabled');
-      })
-      .then(() => getRSSFeed(url))
-      .then((response) => {
-        const parsedRSS = parseRSS(response);
-        const feed = getFeed(parsedRSS, url);
-        const post = getPost(parsedRSS, url);
-        watchedState.urls.unshift(url);
-        watchedState.feeds.unshift(feed);
-        watchedState.posts.unshift(post);
-        createInfoButtonsEvent(watchedState);
-      })
-      .then(() => {
-        changeElementsAttributes('url-input', 'readonly');
-        changeElementsAttributes('add', 'disabled');
-      })
-      .then(() => setTimeout(() => refreshRSSFeed(watchedState), 5000))
+    getRSSFeed(url, watchedState)
+      .then(() => setTimeout(() => {
+        console.log('lets go');
+        state.urls.forEach((urlName) => {
+          // обновляет один раз, надо чтобы несколько было
+          // , добавить в основную функцию и вызов через стейт //
+          getRSSFeed(urlName, watchedState);
+        });
+      }, 5000))
       .catch((error) => {
+        watchedState.form = 'error';
         switch (error.message) {
           case 'notRSS':
             watchedState.errors.notRSS = error.message;
@@ -190,8 +182,8 @@ const init = () => {
             watchedState.errors.networkError = error.message;
         }
         console.log('hehey!');
-        changeElementsAttributes('add', 'disabled');
-        changeElementsAttributes('url-input', 'readonly');
+        watchedState.attributes.urlInputReadonly = false;
+        watchedState.attributes.addButtonDisabled = false;
       });
   });
 };
