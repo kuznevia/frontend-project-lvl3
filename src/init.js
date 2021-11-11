@@ -30,6 +30,7 @@ const getFeed = (parsedRSS, url, state) => {
     url,
   };
   state.feeds.unshift(feed);
+  state.urls.unshift(url);
 };
 
 const getPost = (parsedRSS, url, state) => {
@@ -69,7 +70,7 @@ const getPost = (parsedRSS, url, state) => {
 };
 
 const createInfoButtonsEvent = (state) => {
-  const infoButtons = document.querySelectorAll('.btn-info');
+  const infoButtons = document.querySelectorAll('.btn-outline-primary');
   infoButtons.forEach((button) => {
     button.addEventListener('click', () => {
       const parentRaw = button.parentNode.parentNode;
@@ -102,7 +103,6 @@ const getRSSFeed = (url, state) => {
       const parsedRSS = parseRSS(response);
       getPost(parsedRSS, url, state);
       getFeed(parsedRSS, url, state);
-      state.urls.unshift(url);
       createInfoButtonsEvent(state);
     })
     .then(() => {
@@ -110,6 +110,15 @@ const getRSSFeed = (url, state) => {
       state.attributes.addButtonDisabled = false;
       state.form = 'success';
     });
+};
+
+const refreshFeed = (state) => {
+  if (state.form === 'success') {
+    state.urls.forEach((url) => {
+      getRSSFeed(url, state);
+    });
+    setTimeout(() => refreshFeed(state), 5000);
+  }
 };
 
 const init = () => {
@@ -160,16 +169,10 @@ const init = () => {
       return;
     }
     getRSSFeed(url, watchedState)
-      .then(() => setTimeout(() => {
-        console.log('lets go');
-        state.urls.forEach((urlName) => {
-          // обновляет один раз, надо чтобы несколько было
-          // , добавить в основную функцию и вызов через стейт //
-          getRSSFeed(urlName, watchedState);
-        });
-      }, 5000))
+      .then(() => setTimeout(() => refreshFeed(watchedState), 5000))
       .catch((error) => {
         watchedState.form = 'error';
+        console.log(error.message);
         switch (error.message) {
           case 'notRSS':
             watchedState.errors.notRSS = error.message;
@@ -186,6 +189,7 @@ const init = () => {
         watchedState.attributes.addButtonDisabled = false;
       });
   });
+  // разберись как запускать проверку статуса на success и далее getRss по state.url //
 };
 
 export default init;

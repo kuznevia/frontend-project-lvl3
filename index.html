@@ -23,20 +23,20 @@
         </div>
       </div>
       <div class="container-fluid">
-        <div class="row bg-dark">
+        <div class="row bg-dark p-5">
           <div class="col d-flex flex-column align-items-center">
-            <div class="col">
-              <h1 class="text-white fw-light">RSS агрегатор</h1>
-              <h5 class="text-white fw-light">Начни читать RSS сегодня! Это легко, это красиво!</h5>
+            <div class="col w-75">
+              <h1 class="display-3 mb-0 text-white fw-light">RSS агрегатор</h1>
+              <p class="text-white fw-light lead">Начни читать RSS сегодня! Это легко, это красиво.</p>
               <form id="rss-form" class="" action="">
                 <div class="row">
-                  <div class="col">
-                    <label for="url-input">url</label>
-                    <input id="url-input" name="url" role="textbox" autofocus required name="url" class="form-control w-100" placeholder="Ссылка RSS" autocomplete="off">
+                  <div class="col-8">
+                    <label for="url-input" class="visually-hidden">url</label>
+                    <input id="url-input" class="form-control w-100 h-100" name="url" role="textbox" autofocus required name="url"  placeholder="Ссылка RSS" autocomplete="off">
                   </div>
-                  <div class="col">
-                    <label for="add">add</label>
-                    <button id="add" type="submit" name="add" role="button" class="btn btn-primary">Добавить</button>
+                  <div class="col-4">
+                    <label for="add" class="visually-hidden">add</label>
+                    <button id="add" class="h-100 btn btn-lg btn-primary px-sm-5" type="submit" name="add" role="button">Добавить</button>
                   </div>
                   <p class="mt-2 mb-0 text-muted">Пример: https://ru.hexlet.io/lessons.rss</p>
                   <p class="feedback m-0 small text-danger"></p>
@@ -45,10 +45,10 @@
             </div>
           </div>
         </div>
-        <div class="row">
-          <div id="posts" class="col">
+        <div class="row p-5 m-3">
+          <div id="posts" class="col-8">
           </div>
-          <div id="feeds" class="col">
+          <div id="feeds" class="col-4">
           </div>
         </div>
       </div>
