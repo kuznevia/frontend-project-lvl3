@@ -14,10 +14,11 @@ const changeFeedBack = {
 
 const changeElementsAttributes = (id, attribute, status) => {
   const element = document.getElementById(id);
-  if (status === false) {
+  console.log(element);
+  if (status === 'success' || status === 'error') {
     element.removeAttribute(attribute);
   }
-  if (status === true) {
+  if (status === 'filling') {
     element.setAttribute(attribute, '');
   }
 };
@@ -115,11 +116,8 @@ export default (state) => onChange(state, (path, value) => {
     });
   }
 
-  if (path === 'attributes.urlInputReadonly') {
-    changeElementsAttributes('url-input', 'disabled', value);
-  }
-
-  if (path === 'attributes.addButtonDisabled') {
-    changeElementsAttributes('add', 'readonly', value);
+  if (path === 'form') {
+    changeElementsAttributes('url-input', 'readonly', value);
+    changeElementsAttributes('add', 'disabled', value);
   }
 });

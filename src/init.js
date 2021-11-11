@@ -94,23 +94,20 @@ const createInfoButtonsEvent = (state) => {
   });
 };
 
-const getRSSFeed = (url, state) => {
-  state.attributes.urlInputReadonly = true;
-  state.attributes.addButtonDisabled = true;
-  return schema.validate(url)
-    .then(() => getRSSFeedData(url))
-    .then((response) => {
-      const parsedRSS = parseRSS(response);
-      getPost(parsedRSS, url, state);
-      getFeed(parsedRSS, url, state);
-      createInfoButtonsEvent(state);
-    })
-    .then(() => {
-      state.attributes.urlInputReadonly = false;
-      state.attributes.addButtonDisabled = false;
-      state.form = 'success';
-    });
-};
+const getRSSFeed = (url, state) => schema.validate(url)
+  .then(() => {
+    state.form = 'filling';
+  })
+  .then(() => getRSSFeedData(url))
+  .then((response) => {
+    const parsedRSS = parseRSS(response);
+    getPost(parsedRSS, url, state);
+    getFeed(parsedRSS, url, state);
+    createInfoButtonsEvent(state);
+  })
+  .then(() => {
+    state.form = 'success';
+  });
 
 const refreshFeed = (state) => {
   if (state.form === 'success') {
@@ -147,10 +144,6 @@ const init = () => {
       notURL: null,
       exists: false,
     },
-    attributes: {
-      urlInputReadonly: false,
-      addButtonDisabled: false,
-    },
     urls: [],
     feeds: [],
     posts: [],
@@ -161,7 +154,6 @@ const init = () => {
   const form = document.body.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    watchedState.form = 'filling';
     const formData = new FormData(e.target);
     const url = formData.get('url');
     if (state.urls.includes(url)) {
@@ -185,11 +177,8 @@ const init = () => {
             watchedState.errors.networkError = error.message;
         }
         console.log('hehey!');
-        watchedState.attributes.urlInputReadonly = false;
-        watchedState.attributes.addButtonDisabled = false;
       });
   });
-  // разберись как запускать проверку статуса на success и далее getRss по state.url //
 };
 
 export default init;
