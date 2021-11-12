@@ -1,6 +1,6 @@
 import * as yup from 'yup';
-import i18next from 'i18next';
 import axios from 'axios';
+import i18next from 'i18next';
 import watch from './view.js';
 
 const schema = yup.string().url();
@@ -96,7 +96,7 @@ const createInfoButtonsEvent = (state) => {
 
 const getRSSFeed = (url, state) => schema.validate(url)
   .then(() => {
-    state.form = 'filling';
+    state.form.processState = 'submitting';
   })
   .then(() => getRSSFeedData(url))
   .then((response) => {
@@ -106,11 +106,11 @@ const getRSSFeed = (url, state) => schema.validate(url)
     createInfoButtonsEvent(state);
   })
   .then(() => {
-    state.form = 'success';
+    state.form.processState = 'success';
   });
 
 const refreshFeed = (state) => {
-  if (state.form === 'success') {
+  if (state.form.processState === 'success') {
     state.urls.forEach((url) => {
       getRSSFeed(url, state);
     });
@@ -119,7 +119,9 @@ const refreshFeed = (state) => {
 };
 
 const init = () => {
-  i18next.init({
+  const i18nextInstance = i18next.createInstance();
+
+  i18nextInstance.init({
     lng: 'ru',
     debug: true,
     resources: {
@@ -138,18 +140,20 @@ const init = () => {
   });
 
   const state = {
-    form: null,
-    errors: {
-      notRSS: null,
-      notURL: null,
-      exists: false,
+    form: {
+      processState: 'waiting',
+      errors: {
+        notRSS: null,
+        notURL: null,
+        exists: false,
+      },
     },
     urls: [],
     feeds: [],
     posts: [],
   };
 
-  const watchedState = watch(state);
+  const watchedState = watch(state, i18nextInstance);
 
   const form = document.body.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
@@ -157,26 +161,25 @@ const init = () => {
     const formData = new FormData(e.target);
     const url = formData.get('url');
     if (state.urls.includes(url)) {
-      watchedState.errors.exists = true;
+      watchedState.form.errors.exists = true;
       return;
     }
     getRSSFeed(url, watchedState)
       .then(() => setTimeout(() => refreshFeed(watchedState), 5000))
       .catch((error) => {
-        watchedState.form = 'error';
+        watchedState.form.processState = 'error';
         console.log(error.message);
         switch (error.message) {
           case 'notRSS':
-            watchedState.errors.notRSS = error.message;
+            watchedState.form.errors.notRSS = error.message;
             break;
           case 'this must be a valid URL':
-            watchedState.errors.notURL = error.message;
+            watchedState.form.errors.notURL = error.message;
             break;
           default:
             console.log(error.message);
-            watchedState.errors.networkError = error.message;
+            watchedState.form.errors.networkError = error.message;
         }
-        console.log('hehey!');
       });
   });
 };

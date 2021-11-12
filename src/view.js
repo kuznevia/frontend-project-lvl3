@@ -1,5 +1,4 @@
 import onChange from 'on-change';
-import i18next from 'i18next';
 
 const changeFeedBack = {
   danger: (elem) => {
@@ -14,44 +13,55 @@ const changeFeedBack = {
 
 const changeElementsAttributes = (id, attribute, status) => {
   const element = document.getElementById(id);
-  console.log(element);
+
   if (status === 'success' || status === 'error') {
     element.removeAttribute(attribute);
   }
-  if (status === 'filling') {
+  if (status === 'submitting') {
     element.setAttribute(attribute, '');
   }
 };
 
-export default (state) => onChange(state, (path, value) => {
-  if (path === 'errors.notURL') {
+const setDangerBorder = (id, className, status) => {
+  const element = document.getElementById(id);
+
+  if (status === 'success' || status === 'submitting') {
+    element.classList.remove(className);
+  }
+  if (status === 'error') {
+    element.classList.add(className);
+  }
+};
+
+export default (state, i18nextInstance) => onChange(state, (path, value) => {
+  if (path === 'form.errors.notURL') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
-    feedback.textContent = i18next.t('submitForm.urlError');
+    feedback.textContent = i18nextInstance.t('submitForm.urlError');
   }
 
-  if (path === 'errors.notRSS') {
+  if (path === 'form.errors.notRSS') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
-    feedback.textContent = i18next.t('submitForm.notRSS');
+    feedback.textContent = i18nextInstance.t('submitForm.notRSS');
   }
 
-  if (path === 'errors.exists') {
+  if (path === 'form.errors.exists') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
-    feedback.textContent = i18next.t('submitForm.alreadyExists');
+    feedback.textContent = i18nextInstance.t('submitForm.alreadyExists');
   }
 
-  if (path === 'errors.networkError') {
+  if (path === 'form.errors.networkError') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
-    feedback.textContent = i18next.t('submitForm.networkError');
+    feedback.textContent = i18nextInstance.t('submitForm.networkError');
   }
 
   if (path === 'urls') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.succsess(feedback);
-    feedback.textContent = i18next.t('submitForm.added');
+    feedback.textContent = i18nextInstance.t('submitForm.added');
     const form = document.getElementById('rss-form');
     const input = document.getElementById('url-input');
     form.reset();
@@ -116,8 +126,9 @@ export default (state) => onChange(state, (path, value) => {
     });
   }
 
-  if (path === 'form') {
+  if (path === 'form.processState') {
     changeElementsAttributes('url-input', 'readonly', value);
     changeElementsAttributes('add', 'disabled', value);
+    setDangerBorder('url-input', 'border-danger', value);
   }
 });
