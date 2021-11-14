@@ -34,31 +34,13 @@ const setDangerBorder = (id, className, status) => {
 };
 
 export default (state, i18nextInstance) => onChange(state, (path, value) => {
-  if (path === 'form.errors.notURL') {
+  if (path === 'form.error') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
-    feedback.textContent = i18nextInstance.t('submitForm.urlError');
+    feedback.textContent = value;
   }
 
-  if (path === 'form.errors.notRSS') {
-    const feedback = document.querySelector('.feedback');
-    changeFeedBack.danger(feedback);
-    feedback.textContent = i18nextInstance.t('submitForm.notRSS');
-  }
-
-  if (path === 'form.errors.exists') {
-    const feedback = document.querySelector('.feedback');
-    changeFeedBack.danger(feedback);
-    feedback.textContent = i18nextInstance.t('submitForm.alreadyExists');
-  }
-
-  if (path === 'form.errors.networkError') {
-    const feedback = document.querySelector('.feedback');
-    changeFeedBack.danger(feedback);
-    feedback.textContent = i18nextInstance.t('submitForm.networkError');
-  }
-
-  if (path === 'urls') {
+  if (path === 'data.urls') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.succsess(feedback);
     feedback.textContent = i18nextInstance.t('submitForm.added');
@@ -68,7 +50,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     input.focus();
   }
 
-  if (path === 'feeds') {
+  if (path === 'data.feeds') {
     const feeds = document.getElementById('feeds');
     feeds.innerHTML = '';
     const header = document.createElement('h3');
@@ -86,7 +68,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     });
   }
 
-  if (path === 'posts') {
+  if (path === 'data.posts') {
     const posts = document.getElementById('posts');
     posts.innerHTML = '';
     const header = document.createElement('h3');
@@ -134,7 +116,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     });
   }
 
-  if (path === 'form.processState') {
+  if (path === 'form.formState') {
     changeElementsAttributes('url-input', 'readonly', value);
     changeElementsAttributes('add', 'disabled', value);
     setDangerBorder('url-input', 'border-danger', value);

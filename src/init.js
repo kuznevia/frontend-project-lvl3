@@ -20,7 +20,7 @@ const parseRSS = (response) => {
 };
 
 const getFeed = (parsedRSS, url, state) => {
-  if (state.urls.includes(url)) {
+  if (state.data.urls.includes(url)) {
     return;
   }
   const feedTitle = parsedRSS.firstElementChild.firstElementChild.firstElementChild.textContent;
@@ -31,8 +31,8 @@ const getFeed = (parsedRSS, url, state) => {
     feedDescription,
     url,
   };
-  state.feeds.unshift(feed);
-  state.urls.unshift(url);
+  state.data.feeds.unshift(feed);
+  state.data.urls.unshift(url);
 };
 
 const getPost = (parsedRSS, url, state) => {
@@ -53,9 +53,9 @@ const getPost = (parsedRSS, url, state) => {
     postList,
     url,
   };
-  const targetPost = state.posts.filter((node) => node.url === post.url);
+  const targetPost = state.data.posts.filter((node) => node.url === post.url);
   if (targetPost.length === 0) {
-    state.posts.unshift(post);
+    state.data.posts.unshift(post);
   } else {
     const uniquePosts = post.postList.reduce((acc, node) => {
       const newPost = targetPost[0].postList
@@ -67,7 +67,7 @@ const getPost = (parsedRSS, url, state) => {
     }, []);
     if (uniquePosts.length > 0) {
       const newPosts = { postList: uniquePosts, url };
-      state.posts.unshift(newPosts);
+      state.data.posts.unshift(newPosts);
     }
   }
 };
@@ -79,7 +79,7 @@ const createInfoButtonsEvent = (state) => {
       const parentRaw = e.target.parentNode.parentNode;
       const link = parentRaw.querySelector('a');
       const title = link.textContent;
-      state.posts.forEach((post) => {
+      state.data.posts.forEach((post) => {
         post.postList.forEach((list) => {
           if (list.postTitle === title) {
             list.read = true;
@@ -95,7 +95,7 @@ const createInfoButtonsEvent = (state) => {
 
 const getRSSFeed = (url, state) => schema.validate(url)
   .then(() => {
-    state.form.processState = 'submitting';
+    state.form.formState = 'submitting';
   })
   .then(() => getRSSFeedData(url))
   .then((response) => {
@@ -105,12 +105,12 @@ const getRSSFeed = (url, state) => schema.validate(url)
     createInfoButtonsEvent(state);
   })
   .then(() => {
-    state.form.processState = 'success';
+    state.form.formState = 'success';
   });
 
 const refreshFeed = (state) => {
-  if (state.form.processState === 'success') {
-    state.urls.forEach((url) => {
+  if (state.form.formState === 'success') {
+    state.data.urls.forEach((url) => {
       getRSSFeed(url, state);
     });
     setTimeout(() => refreshFeed(state), 5000);
@@ -140,16 +140,16 @@ const init = () => {
 
   const state = {
     form: {
-      processState: 'waiting',
-      errors: {
-        notRSS: null,
-        notURL: null,
-        exists: false,
-      },
+      formState: 'waiting',
+      error: 'error discription',
     },
-    urls: [],
-    feeds: [],
-    posts: [],
+    data: {
+      dataReceivingState: 'waiting',
+      urls: [],
+      feeds: [],
+      posts: [],
+      error: 'error discription',
+    },
   };
 
   const watchedState = watch(state, i18nextInstance);
@@ -159,25 +159,24 @@ const init = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    if (state.urls.includes(url)) {
-      watchedState.form.errors.exists = true;
+    if (state.data.urls.includes(url)) {
+      watchedState.form.formState = 'error';
+      watchedState.form.error = i18nextInstance.t('submitForm.alreadyExists');
       return;
     }
     getRSSFeed(url, watchedState)
       .then(() => setTimeout(() => refreshFeed(watchedState), 5000))
       .catch((error) => {
-        watchedState.form.processState = 'error';
-        console.log(error.message);
+        watchedState.form.formState = 'error';
         switch (error.message) {
           case 'notRSS':
-            watchedState.form.errors.notRSS = error.message;
+            watchedState.form.error = i18nextInstance.t('submitForm.notRSS');
             break;
           case 'this must be a valid URL':
-            watchedState.form.errors.notURL = error.message;
+            watchedState.form.error = i18nextInstance.t('submitForm.urlError');
             break;
           default:
-            console.log(error.message);
-            watchedState.form.errors.networkError = error.message;
+            watchedState.form.error = i18nextInstance.t('submitForm.networkError');
         }
       });
   });
