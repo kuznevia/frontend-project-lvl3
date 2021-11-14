@@ -5,7 +5,9 @@ import watch from './view.js';
 
 const schema = yup.string().url();
 
-const getRSSFeedData = (url) => axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`);
+const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`;
+
+const getRSSFeedData = (url) => axios.get(addProxy(url));
 
 const parseRSS = (response) => {
   const parser = new DOMParser();
@@ -44,6 +46,7 @@ const getPost = (parsedRSS, url, state) => {
       postLink,
       postDescription,
       read: false,
+      activated: false,
     };
   });
   const post = {
@@ -70,27 +73,23 @@ const getPost = (parsedRSS, url, state) => {
 };
 
 const createInfoButtonsEvent = (state) => {
-  const infoButtons = document.querySelectorAll('.btn-outline-primary');
-  infoButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const parentRaw = button.parentNode.parentNode;
+  const posts = document.getElementById('posts');
+  posts.addEventListener('click', (e) => {
+    if (e.target.className === 'btn btn-outline-primary') {
+      const parentRaw = e.target.parentNode.parentNode;
       const link = parentRaw.querySelector('a');
       const title = link.textContent;
       state.posts.forEach((post) => {
         post.postList.forEach((list) => {
           if (list.postTitle === title) {
             list.read = true;
-            const modalHeader = document.getElementById('exampleModalLabel');
-            const modalBody = document.querySelector('.modal-body');
-            const modalLink = document.querySelector('.modal-link');
-            modalHeader.textContent = list.postTitle;
-            modalBody.textContent = list.postDescription;
-            modalLink.href = list.postLink;
+            list.activated = true;
+          } else {
+            list.activated = false;
           }
         });
       });
-      createInfoButtonsEvent(state);
-    });
+    }
   });
 };
 

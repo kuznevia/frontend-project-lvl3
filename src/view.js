@@ -104,6 +104,14 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
           link.classList.add('fw-normal');
           link.classList.remove('fw-bold');
         }
+        if (post.activated === true) {
+          const modalHeader = document.getElementById('exampleModalLabel');
+          const modalBody = document.querySelector('.modal-body');
+          const modalLink = document.querySelector('.modal-link');
+          modalHeader.textContent = post.postTitle;
+          modalBody.textContent = post.postDescription;
+          modalLink.href = post.postLink;
+        }
         const button = document.createElement('button');
         button.type = 'button';
         button.classList.add('btn');
