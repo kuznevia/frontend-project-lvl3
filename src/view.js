@@ -14,10 +14,10 @@ const changeFeedBack = {
 const changeElementsAttributes = (id, attribute, status) => {
   const element = document.getElementById(id);
 
-  if (status === 'success' || status === 'error') {
+  if (status === 'success' || status === 'error' || status === 'invalid') {
     element.removeAttribute(attribute);
   }
-  if (status === 'submitting') {
+  if (status === 'receiving') {
     element.setAttribute(attribute, '');
   }
 };
@@ -25,12 +25,18 @@ const changeElementsAttributes = (id, attribute, status) => {
 const setDangerBorder = (id, className, status) => {
   const element = document.getElementById(id);
 
-  if (status === 'success' || status === 'submitting') {
+  if (status === 'success' || status === 'receiving') {
     element.classList.remove(className);
   }
-  if (status === 'error') {
+  if (status === 'error' || status === 'invalid') {
     element.classList.add(className);
   }
+};
+
+const renderStateElements = (value) => {
+  changeElementsAttributes('url-input', 'readonly', value);
+  changeElementsAttributes('add', 'disabled', value);
+  setDangerBorder('url-input', 'border-danger', value);
 };
 
 export default (state, i18nextInstance) => onChange(state, (path, value) => {
@@ -40,7 +46,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     feedback.textContent = value;
   }
 
-  if (path === 'data.urls') {
+  if (path === 'urls') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.succsess(feedback);
     feedback.textContent = i18nextInstance.t('submitForm.added');
@@ -50,7 +56,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     input.focus();
   }
 
-  if (path === 'data.feeds') {
+  if (path === 'feeds') {
     const feeds = document.getElementById('feeds');
     feeds.innerHTML = '';
     const header = document.createElement('h3');
@@ -68,7 +74,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     });
   }
 
-  if (path === 'data.posts') {
+  if (path === 'posts') {
     const posts = document.getElementById('posts');
     posts.innerHTML = '';
     const header = document.createElement('h3');
@@ -116,9 +122,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     });
   }
 
-  if (path === 'form.formState') {
-    changeElementsAttributes('url-input', 'readonly', value);
-    changeElementsAttributes('add', 'disabled', value);
-    setDangerBorder('url-input', 'border-danger', value);
+  if (path === 'form.formState' || path === 'data.dataReceivingState') {
+    renderStateElements(value);
   }
 });
