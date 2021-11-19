@@ -46,16 +46,6 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     feedback.textContent = value;
   }
 
-  if (path === 'urls') {
-    const feedback = document.querySelector('.feedback');
-    changeFeedBack.succsess(feedback);
-    feedback.textContent = i18nextInstance.t('submitForm.added');
-    const form = document.getElementById('rss-form');
-    const input = document.getElementById('url-input');
-    form.reset();
-    input.focus();
-  }
-
   if (path === 'feeds') {
     const feeds = document.getElementById('feeds');
     feeds.innerHTML = '';
@@ -72,6 +62,13 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
       feeds.append(title);
       feeds.append(description);
     });
+    const feedback = document.querySelector('.feedback');
+    changeFeedBack.succsess(feedback);
+    feedback.textContent = i18nextInstance.t('submitForm.added');
+    const form = document.getElementById('rss-form');
+    const input = document.getElementById('url-input');
+    form.reset();
+    input.focus();
   }
 
   if (path === 'posts') {
@@ -83,8 +80,8 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     value.forEach((values) => {
       values.postList.forEach((post) => {
         const link = document.createElement('a');
-        link.textContent = post.postTitle;
-        link.href = post.postLink;
+        link.textContent = post.title;
+        link.href = post.link;
         if (post.read === false) {
           link.classList.add('fw-bold');
           link.classList.remove('fw-normal');
@@ -96,9 +93,9 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
           const modalHeader = document.getElementById('exampleModalLabel');
           const modalBody = document.querySelector('.modal-body');
           const modalLink = document.querySelector('.modal-link');
-          modalHeader.textContent = post.postTitle;
-          modalBody.textContent = post.postDescription;
-          modalLink.href = post.postLink;
+          modalHeader.textContent = post.title;
+          modalBody.textContent = post.description;
+          modalLink.href = post.link;
         }
         const button = document.createElement('button');
         button.type = 'button';

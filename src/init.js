@@ -20,7 +20,8 @@ const parseRSS = (response) => {
 };
 
 const getFeed = (parsedRSS, url, state) => {
-  if (state.urls.includes(url)) {
+  const urls = state.feeds.map((feed) => feed.url);
+  if (urls.includes(url)) {
     return;
   }
   const feedTitle = parsedRSS.firstElementChild.firstElementChild.firstElementChild.textContent;
@@ -32,19 +33,18 @@ const getFeed = (parsedRSS, url, state) => {
     url,
   };
   state.feeds.unshift(feed);
-  state.urls.unshift(url);
 };
 
 const getPost = (parsedRSS, url, state) => {
   const items = parsedRSS.querySelectorAll('item');
   const postList = Array.from(items).map((item) => {
-    const postTitle = item.querySelector('title').textContent;
-    const postLink = item.querySelector('link').textContent;
-    const postDescription = item.querySelector('description').textContent;
+    const title = item.querySelector('title').textContent;
+    const link = item.querySelector('link').textContent;
+    const description = item.querySelector('description').textContent;
     return {
-      postTitle,
-      postLink,
-      postDescription,
+      title,
+      link,
+      description,
       read: false,
       activated: false,
     };
@@ -59,7 +59,7 @@ const getPost = (parsedRSS, url, state) => {
   } else {
     const uniquePosts = post.postList.reduce((acc, node) => {
       const newPost = targetPost[0].postList
-        .filter((targetNode) => targetNode.postTitle === node.postTitle);
+        .filter((targetNode) => targetNode.title === node.title);
       if (newPost.length === 0) {
         acc.push(node);
       }
@@ -81,7 +81,7 @@ const createInfoButtonsEvent = (state) => {
       const title = link.textContent;
       state.posts.forEach((post) => {
         post.postList.forEach((list) => {
-          if (list.postTitle === title) {
+          if (list.title === title) {
             list.read = true;
             list.activated = true;
           } else {
@@ -110,7 +110,8 @@ const getRSSFeed = (url, state) => schema.validate(url)
 
 const refreshFeed = (state) => {
   if (state.data.dataReceivingState === 'success') {
-    state.urls.forEach((url) => {
+    const urls = state.feeds.map((feed) => feed.url);
+    urls.forEach((url) => {
       getRSSFeed(url, state);
     });
     setTimeout(() => refreshFeed(state), 5000);
@@ -147,7 +148,6 @@ const init = () => {
       dataReceivingState: 'waiting',
       error: 'error discription',
     },
-    urls: [],
     feeds: [],
     posts: [],
   };
@@ -159,7 +159,8 @@ const init = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    if (state.urls.includes(url)) {
+    const urls = state.feeds.map((feed) => feed.url);
+    if (urls.includes(url)) {
       watchedState.form.formState = 'invalid';
       watchedState.form.error = i18nextInstance.t('submitForm.alreadyExists');
       return;
