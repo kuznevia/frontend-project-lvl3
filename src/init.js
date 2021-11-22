@@ -9,21 +9,7 @@ const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCa
 
 const getRSSFeedData = (url) => axios.get(addProxy(url));
 
-const parseRSS = (response) => {
-  const parser = new DOMParser();
-  const xmlString = response.data.contents;
-  const parsedRSS = parser.parseFromString(xmlString, 'application/xml');
-  if (parsedRSS.querySelector('parsererror') === null) {
-    return parsedRSS;
-  }
-  throw new Error('notRSS');
-};
-
-const getFeed = (parsedRSS, url, state) => {
-  const urls = state.feeds.map((feed) => feed.url);
-  if (urls.includes(url)) {
-    return;
-  }
+const getFeed = (parsedRSS, url) => {
   const feedTitle = parsedRSS.firstElementChild.firstElementChild.firstElementChild.textContent;
   const feedDescription = parsedRSS
     .firstElementChild.firstElementChild.children[1].textContent;
@@ -32,10 +18,10 @@ const getFeed = (parsedRSS, url, state) => {
     feedDescription,
     url,
   };
-  state.feeds.unshift(feed);
+  return feed;
 };
 
-const getPost = (parsedRSS, url, state) => {
+const getPost = (parsedRSS, url) => {
   const items = parsedRSS.querySelectorAll('item');
   const postList = Array.from(items).map((item) => {
     const title = item.querySelector('title').textContent;
@@ -53,23 +39,19 @@ const getPost = (parsedRSS, url, state) => {
     postList,
     url,
   };
-  const targetPost = state.posts.filter((node) => node.url === post.url);
-  if (targetPost.length === 0) {
-    state.posts.unshift(post);
-  } else {
-    const uniquePosts = post.postList.reduce((acc, node) => {
-      const newPost = targetPost[0].postList
-        .filter((targetNode) => targetNode.title === node.title);
-      if (newPost.length === 0) {
-        acc.push(node);
-      }
-      return acc;
-    }, []);
-    if (uniquePosts.length > 0) {
-      const newPosts = { postList: uniquePosts, url };
-      state.posts.unshift(newPosts);
-    }
+  return post;
+};
+
+const getParseRSSdata = (response, url) => {
+  const parser = new DOMParser();
+  const xmlString = response.data.contents;
+  const parsedRSS = parser.parseFromString(xmlString, 'application/xml');
+  if (parsedRSS.querySelector('parsererror') === null) {
+    const post = getPost(parsedRSS, url);
+    const feed = getFeed(parsedRSS, url);
+    return { post, feed };
   }
+  throw new Error('notRSS');
 };
 
 const createInfoButtonsEvent = (state) => {
@@ -93,15 +75,40 @@ const createInfoButtonsEvent = (state) => {
   });
 };
 
+const addRSS = (parsedRSSdata, state, url) => {
+  const { post, feed } = parsedRSSdata;
+  const targetPost = state.posts.filter((node) => node.url === post.url);
+  if (targetPost.length === 0) {
+    state.posts.unshift(post);
+  } else {
+    const uniquePosts = post.postList.reduce((acc, node) => {
+      const newPost = targetPost[0].postList
+        .filter((targetNode) => targetNode.title === node.title);
+      if (newPost.length === 0) {
+        acc.push(node);
+      }
+      return acc;
+    }, []);
+    if (uniquePosts.length > 0) {
+      const newPosts = { postList: uniquePosts, url };
+      state.posts.unshift(newPosts);
+    }
+  }
+  const urls = state.feeds.map((item) => item.url);
+  if (urls.includes(url)) {
+    return;
+  }
+  state.feeds.unshift(feed);
+};
+
 const getRSSFeed = (url, state) => schema.validate(url)
   .then(() => {
     state.data.dataReceivingState = 'receiving';
   })
   .then(() => getRSSFeedData(url))
   .then((response) => {
-    const parsedRSS = parseRSS(response);
-    getPost(parsedRSS, url, state);
-    getFeed(parsedRSS, url, state);
+    const parsedRSSdata = getParseRSSdata(response, url);
+    addRSS(parsedRSSdata, state, url);
     createInfoButtonsEvent(state);
   })
   .then(() => {
