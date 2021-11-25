@@ -1,6 +1,7 @@
 import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
+import _ from 'lodash';
 import watch from './view.js';
 
 const schema = yup.string().url();
@@ -31,6 +32,7 @@ const getPost = (parsedRSS, url) => {
       title,
       link,
       description,
+      id: _.uniqueId(),
       read: false,
       activated: false,
     };
@@ -52,27 +54,6 @@ const getParseRSSdata = (response, url) => {
     return { post, feed };
   }
   throw new Error('notRSS');
-};
-
-const createInfoButtonsEvent = (state) => {
-  const posts = document.getElementById('posts');
-  posts.addEventListener('click', (e) => {
-    if (e.target.className === 'btn btn-outline-primary') {
-      const parentRaw = e.target.parentNode.parentNode;
-      const link = parentRaw.querySelector('a');
-      const title = link.textContent;
-      state.posts.forEach((post) => {
-        post.postList.forEach((list) => {
-          if (list.title === title) {
-            list.read = true;
-            list.activated = true;
-          } else {
-            list.activated = false;
-          }
-        });
-      });
-    }
-  });
 };
 
 const addRSS = (parsedRSSdata, state, url) => {
@@ -108,8 +89,8 @@ const getRSSFeed = (url, state) => schema.validate(url)
   .then(() => getRSSFeedData(url))
   .then((response) => {
     const parsedRSSdata = getParseRSSdata(response, url);
+    // const uniqueposts, а потом здесь обновлять через unshift + тоже самое с фидами через if //
     addRSS(parsedRSSdata, state, url);
-    createInfoButtonsEvent(state);
   })
   .then(() => {
     state.data.dataReceivingState = 'success';
@@ -149,17 +130,31 @@ const init = () => {
   const state = {
     form: {
       formState: 'filling',
-      error: 'error discription',
+      error: '',
     },
     data: {
       dataReceivingState: 'waiting',
-      error: 'error discription',
+      error: '',
     },
     feeds: [],
     posts: [],
+    postRead: [],
+    postActivated: null,
   };
 
   const watchedState = watch(state, i18nextInstance);
+
+  const posts = document.getElementById('posts');
+  posts.addEventListener('click', (e) => {
+    if (e.target.className === 'btn btn-outline-primary') {
+      const parentRaw = e.target.parentNode.parentNode;
+      const link = parentRaw.querySelector('a');
+      if (!state.postRead.includes(link.id)) {
+        watchedState.postRead.push(link.id);
+      }
+      watchedState.postActivated = link.id;
+    }
+  });
 
   const form = document.body.querySelector('#rss-form');
   form.addEventListener('submit', (e) => {
@@ -173,6 +168,7 @@ const init = () => {
       return;
     }
     getRSSFeed(url, watchedState)
+    // сделать обход через урлы refreshFeed(url) //
       .then(() => setTimeout(() => refreshFeed(watchedState), 5000))
       .catch((error) => {
         switch (error.message) {

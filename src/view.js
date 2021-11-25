@@ -82,20 +82,9 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
         const link = document.createElement('a');
         link.textContent = post.title;
         link.href = post.link;
-        if (post.read === false) {
+        link.id = post.id;
+        if (!state.postRead.includes(link.id)) {
           link.classList.add('fw-bold');
-          link.classList.remove('fw-normal');
-        } else {
-          link.classList.add('fw-normal');
-          link.classList.remove('fw-bold');
-        }
-        if (post.activated === true) {
-          const modalHeader = document.getElementById('exampleModalLabel');
-          const modalBody = document.querySelector('.modal-body');
-          const modalLink = document.querySelector('.modal-link');
-          modalHeader.textContent = post.title;
-          modalBody.textContent = post.description;
-          modalLink.href = post.link;
         }
         const button = document.createElement('button');
         button.type = 'button';
@@ -117,6 +106,25 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
         posts.append(divRow);
       });
     });
+  }
+
+  if (path === 'postRead') {
+    value.forEach((values) => {
+      const link = document.getElementById(values);
+      link.classList.add('fw-normal');
+      link.classList.remove('fw-bold');
+    });
+  }
+
+  if (path === 'postActivated') {
+    const posts = state.posts.map((post) => post.postList).flat();
+    const [activePost] = posts.filter((post) => post.id === value);
+    const modalHeader = document.getElementById('exampleModalLabel');
+    const modalBody = document.querySelector('.modal-body');
+    const modalLink = document.querySelector('.modal-link');
+    modalHeader.textContent = activePost.title;
+    modalBody.textContent = activePost.description;
+    modalLink.href = activePost.link;
   }
 
   if (path === 'form.formState' || path === 'data.dataReceivingState') {
