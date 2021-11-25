@@ -56,30 +56,24 @@ const getParseRSSdata = (response, url) => {
   throw new Error('notRSS');
 };
 
-const addRSS = (parsedRSSdata, state, url) => {
-  const { post, feed } = parsedRSSdata;
+const getUniquePosts = (post, state, url) => {
   const targetPost = state.posts.filter((node) => node.url === post.url);
   if (targetPost.length === 0) {
-    state.posts.unshift(post);
-  } else {
-    const uniquePosts = post.postList.reduce((acc, node) => {
-      const newPost = targetPost[0].postList
-        .filter((targetNode) => targetNode.title === node.title);
-      if (newPost.length === 0) {
-        acc.push(node);
-      }
-      return acc;
-    }, []);
-    if (uniquePosts.length > 0) {
-      const newPosts = { postList: uniquePosts, url };
-      state.posts.unshift(newPosts);
+    return post;
+  }
+  const uniquePosts = post.postList.reduce((acc, node) => {
+    const newPost = targetPost[0].postList
+      .filter((targetNode) => targetNode.title === node.title);
+    if (newPost.length === 0) {
+      acc.push(node);
     }
+    return acc;
+  }, []);
+  if (uniquePosts.length > 0) {
+    const newPosts = { postList: uniquePosts, url };
+    return newPosts;
   }
-  const urls = state.feeds.map((item) => item.url);
-  if (urls.includes(url)) {
-    return;
-  }
-  state.feeds.unshift(feed);
+  return null;
 };
 
 const getRSSFeed = (url, state) => schema.validate(url)
@@ -89,21 +83,35 @@ const getRSSFeed = (url, state) => schema.validate(url)
   .then(() => getRSSFeedData(url))
   .then((response) => {
     const parsedRSSdata = getParseRSSdata(response, url);
-    // const uniqueposts, а потом здесь обновлять через unshift + тоже самое с фидами через if //
-    addRSS(parsedRSSdata, state, url);
+    const { post, feed } = parsedRSSdata;
+    const uniquePosts = getUniquePosts(post, state, url);
+    if (uniquePosts !== null) {
+      state.posts.unshift(uniquePosts);
+    }
+    const urls = state.feeds.map((item) => item.url);
+    if (!urls.includes(url)) {
+      state.feeds.unshift(feed);
+    }
   })
   .then(() => {
     state.data.dataReceivingState = 'success';
   });
 
-const refreshFeed = (state) => {
-  if (state.data.dataReceivingState === 'success') {
-    const urls = state.feeds.map((feed) => feed.url);
-    urls.forEach((url) => {
-      getRSSFeed(url, state);
-    });
-    setTimeout(() => refreshFeed(state), 5000);
-  }
+const refreshFeed = (url, state) => {
+  getRSSFeedData(url)
+    .then((response) => {
+      const parsedRSSdata = getParseRSSdata(response, url);
+      const { post, feed } = parsedRSSdata;
+      const uniquePosts = getUniquePosts(post, state, url);
+      if (uniquePosts !== null) {
+        state.feeds.unshift(uniquePosts);
+      }
+      const urls = state.feeds.map((item) => item.url);
+      if (!urls.includes(url)) {
+        state.feeds.unshift(feed);
+      }
+    })
+    .then(() => setTimeout(() => refreshFeed(url, state), 5000));
 };
 
 const init = () => {
@@ -168,8 +176,7 @@ const init = () => {
       return;
     }
     getRSSFeed(url, watchedState)
-    // сделать обход через урлы refreshFeed(url) //
-      .then(() => setTimeout(() => refreshFeed(watchedState), 5000))
+      .then(() => setTimeout(() => refreshFeed(url, watchedState), 5000))
       .catch((error) => {
         switch (error.message) {
           case 'notRSS':
