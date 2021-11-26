@@ -10,7 +10,7 @@ const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCa
 
 const getRSSFeedData = (url) => axios.get(addProxy(url));
 
-const getFeed = (parsedRSS, url) => {
+const getFeedData = (parsedRSS, url) => {
   const feedTitle = parsedRSS.firstElementChild.firstElementChild.firstElementChild.textContent;
   const feedDescription = parsedRSS
     .firstElementChild.firstElementChild.children[1].textContent;
@@ -22,7 +22,7 @@ const getFeed = (parsedRSS, url) => {
   return feed;
 };
 
-const getPost = (parsedRSS, url) => {
+const getPostData = (parsedRSS, url) => {
   const items = parsedRSS.querySelectorAll('item');
   const postList = Array.from(items).map((item) => {
     const title = item.querySelector('title').textContent;
@@ -49,8 +49,8 @@ const getParseRSSdata = (response, url) => {
   const xmlString = response.data.contents;
   const parsedRSS = parser.parseFromString(xmlString, 'application/xml');
   if (parsedRSS.querySelector('parsererror') === null) {
-    const post = getPost(parsedRSS, url);
-    const feed = getFeed(parsedRSS, url);
+    const post = getPostData(parsedRSS, url);
+    const feed = getFeedData(parsedRSS, url);
     return { post, feed };
   }
   throw new Error('notRSS');
@@ -146,8 +146,8 @@ const init = () => {
     },
     feeds: [],
     posts: [],
-    postRead: [],
-    postActivated: null,
+    readedPostIds: [],
+    activePostId: null,
   };
 
   const watchedState = watch(state, i18nextInstance);
@@ -157,10 +157,10 @@ const init = () => {
     if (e.target.className === 'btn btn-outline-primary') {
       const parentRaw = e.target.parentNode.parentNode;
       const link = parentRaw.querySelector('a');
-      if (!state.postRead.includes(link.id)) {
-        watchedState.postRead.push(link.id);
+      if (!state.readedPostIds.includes(link.id)) {
+        watchedState.readedPostIds.push(link.id);
       }
-      watchedState.postActivated = link.id;
+      watchedState.activePostId = link.id;
     }
   });
 

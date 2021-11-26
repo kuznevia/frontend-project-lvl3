@@ -83,7 +83,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
         link.textContent = post.title;
         link.href = post.link;
         link.id = post.id;
-        if (!state.postRead.includes(link.id)) {
+        if (!state.readedPostIds.includes(link.id)) {
           link.classList.add('fw-bold');
         }
         const button = document.createElement('button');
@@ -108,7 +108,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     });
   }
 
-  if (path === 'postRead') {
+  if (path === 'readedPostIds') {
     value.forEach((values) => {
       const link = document.getElementById(values);
       link.classList.add('fw-normal');
@@ -116,7 +116,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     });
   }
 
-  if (path === 'postActivated') {
+  if (path === 'activePostId') {
     const posts = state.posts.map((post) => post.postList).flat();
     const [activePost] = posts.filter((post) => post.id === value);
     const modalHeader = document.getElementById('exampleModalLabel');
