@@ -6,21 +6,9 @@ import watch from './view.js';
 
 const schema = yup.string().url();
 
-const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`;
+const addProxy = (url) => new URL(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${url}`);
 
 const getRSSFeedData = (url) => axios.get(addProxy(url));
-
-const getFeedData = (parsedRSS, url) => {
-  const feedTitle = parsedRSS.firstElementChild.firstElementChild.firstElementChild.textContent;
-  const feedDescription = parsedRSS
-    .firstElementChild.firstElementChild.children[1].textContent;
-  const feed = {
-    feedTitle,
-    feedDescription,
-    url,
-  };
-  return feed;
-};
 
 const getPostData = (parsedRSS, url) => {
   const items = parsedRSS.querySelectorAll('item');
@@ -41,19 +29,26 @@ const getPostData = (parsedRSS, url) => {
     postList,
     url,
   };
-  return post;
+  const feedTitle = parsedRSS.querySelector('title').textContent;
+  const feedDescription = parsedRSS
+    .firstElementChild.firstElementChild.children[1].textContent;
+  const feed = {
+    feedTitle,
+    feedDescription,
+    url,
+  };
+  return { post, feed };
 };
 
 const getParseRSSdata = (response, url) => {
   const parser = new DOMParser();
   const xmlString = response.data.contents;
   const parsedRSS = parser.parseFromString(xmlString, 'application/xml');
-  if (parsedRSS.querySelector('parsererror') === null) {
-    const post = getPostData(parsedRSS, url);
-    const feed = getFeedData(parsedRSS, url);
-    return { post, feed };
+  if (parsedRSS.querySelector('parsererror') !== null) {
+    throw new Error('this link does not contain RSS');
   }
-  throw new Error('notRSS');
+  const { post, feed } = getPostData(parsedRSS, url);
+  return { post, feed };
 };
 
 const getUniquePosts = (post, state, url) => {
@@ -138,11 +133,11 @@ const init = () => {
   const state = {
     form: {
       formState: 'filling',
-      error: '',
+      error: null,
     },
     data: {
       dataReceivingState: 'waiting',
-      error: '',
+      error: null,
     },
     feeds: [],
     posts: [],
@@ -179,7 +174,7 @@ const init = () => {
       .then(() => setTimeout(() => refreshFeed(url, watchedState), 5000))
       .catch((error) => {
         switch (error.message) {
-          case 'notRSS':
+          case 'this link does not contain RSS':
             watchedState.data.dataReceivingState = 'error';
             watchedState.form.error = i18nextInstance.t('submitForm.notRSS');
             break;
