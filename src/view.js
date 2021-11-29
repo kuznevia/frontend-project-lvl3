@@ -82,8 +82,8 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
         const link = document.createElement('a');
         link.textContent = post.title;
         link.href = post.link;
-        link.id = post.id;
-        if (!state.readedPostIds.includes(link.id)) {
+        link.title = post.title;
+        if (!state.readedPostTitles.includes(link.title)) {
           link.classList.add('fw-bold');
         }
         const button = document.createElement('button');
@@ -108,17 +108,18 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     });
   }
 
-  if (path === 'readedPostIds') {
+  if (path === 'readedPostTitles') {
     value.forEach((values) => {
-      const link = document.getElementById(values);
-      link.classList.add('fw-normal');
-      link.classList.remove('fw-bold');
+      const links = document.querySelectorAll('a');
+      const [readedLink] = Array.from(links).filter((link) => link.title === values);
+      readedLink.classList.add('fw-normal');
+      readedLink.classList.remove('fw-bold');
     });
   }
 
-  if (path === 'activePostId') {
+  if (path === 'activePostTitle') {
     const posts = state.posts.map((post) => post.postList).flat();
-    const [activePost] = posts.filter((post) => post.id === value);
+    const [activePost] = posts.filter((post) => post.title === value);
     const modalHeader = document.getElementById('exampleModalLabel');
     const modalBody = document.querySelector('.modal-body');
     const modalLink = document.querySelector('.modal-link');

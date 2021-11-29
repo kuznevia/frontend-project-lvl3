@@ -1,7 +1,6 @@
 import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
-import _ from 'lodash';
 import watch from './view.js';
 
 const schema = yup.string().url();
@@ -20,9 +19,6 @@ const getPostData = (parsedRSS, url) => {
       title,
       link,
       description,
-      id: _.uniqueId(),
-      read: false,
-      activated: false,
     };
   });
   const post = {
@@ -51,22 +47,17 @@ const getParseRSSdata = (response, url) => {
   return { post, feed };
 };
 
-const getUniquePosts = (post, state, url) => {
-  const targetPost = state.posts.filter((node) => node.url === post.url);
-  if (targetPost.length === 0) {
-    return post;
-  }
-  const uniquePosts = post.postList.reduce((acc, node) => {
-    const newPost = targetPost[0].postList
+const getUniquePosts = (oldPost, newPost, url) => {
+  const uniquePosts = newPost.postList.reduce((acc, node) => {
+    const post = oldPost.postList
       .filter((targetNode) => targetNode.title === node.title);
-    if (newPost.length === 0) {
+    if (post.length === 0) {
       acc.push(node);
     }
     return acc;
   }, []);
   if (uniquePosts.length > 0) {
-    const newPosts = { postList: uniquePosts, url };
-    return newPosts;
+    return { postList: uniquePosts, url };
   }
   return null;
 };
@@ -79,14 +70,8 @@ const getRSSFeed = (url, state) => schema.validate(url)
   .then((response) => {
     const parsedRSSdata = getParseRSSdata(response, url);
     const { post, feed } = parsedRSSdata;
-    const uniquePosts = getUniquePosts(post, state, url);
-    if (uniquePosts !== null) {
-      state.posts.unshift(uniquePosts);
-    }
-    const urls = state.feeds.map((item) => item.url);
-    if (!urls.includes(url)) {
-      state.feeds.unshift(feed);
-    }
+    state.feeds.unshift(feed);
+    state.posts.unshift(post);
   })
   .then(() => {
     state.data.dataReceivingState = 'success';
@@ -96,14 +81,11 @@ const refreshFeed = (url, state) => {
   getRSSFeedData(url)
     .then((response) => {
       const parsedRSSdata = getParseRSSdata(response, url);
-      const { post, feed } = parsedRSSdata;
-      const uniquePosts = getUniquePosts(post, state, url);
+      const { post } = parsedRSSdata;
+      const [oldPost] = state.posts.filter((node) => node.url === post.url);
+      const uniquePosts = getUniquePosts(oldPost, post, url);
       if (uniquePosts !== null) {
-        state.feeds.unshift(uniquePosts);
-      }
-      const urls = state.feeds.map((item) => item.url);
-      if (!urls.includes(url)) {
-        state.feeds.unshift(feed);
+        state.posts.unshift(uniquePosts);
       }
     })
     .then(() => setTimeout(() => refreshFeed(url, state), 5000));
@@ -141,8 +123,8 @@ const init = () => {
     },
     feeds: [],
     posts: [],
-    readedPostIds: [],
-    activePostId: null,
+    readedPostTitles: [],
+    activePostTitle: null,
   };
 
   const watchedState = watch(state, i18nextInstance);
@@ -152,10 +134,10 @@ const init = () => {
     if (e.target.className === 'btn btn-outline-primary') {
       const parentRaw = e.target.parentNode.parentNode;
       const link = parentRaw.querySelector('a');
-      if (!state.readedPostIds.includes(link.id)) {
-        watchedState.readedPostIds.push(link.id);
+      if (!state.readedPostTitles.includes(link.title)) {
+        watchedState.readedPostTitles.push(link.title);
       }
-      watchedState.activePostId = link.id;
+      watchedState.activePostTitle = link.title;
     }
   });
 
