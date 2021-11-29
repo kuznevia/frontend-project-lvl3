@@ -43,7 +43,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
   if (path === 'form.error') {
     const feedback = document.querySelector('.feedback');
     changeFeedBack.danger(feedback);
-    feedback.textContent = value;
+    feedback.textContent = i18nextInstance.t(value);
   }
 
   if (path === 'feeds') {

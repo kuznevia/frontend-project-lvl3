@@ -149,7 +149,7 @@ const init = () => {
     const urls = state.feeds.map((feed) => feed.url);
     if (urls.includes(url)) {
       watchedState.form.formState = 'invalid';
-      watchedState.form.error = i18nextInstance.t('submitForm.alreadyExists');
+      watchedState.form.error = 'submitForm.alreadyExists';
       return;
     }
     getRSSFeed(url, watchedState)
@@ -158,15 +158,15 @@ const init = () => {
         switch (error.message) {
           case 'this link does not contain RSS':
             watchedState.data.dataReceivingState = 'error';
-            watchedState.form.error = i18nextInstance.t('submitForm.notRSS');
+            watchedState.form.error = 'submitForm.notRSS';
             break;
           case 'this must be a valid URL':
             watchedState.form.formState = 'invalid';
-            watchedState.form.error = i18nextInstance.t('submitForm.urlError');
+            watchedState.form.error = 'submitForm.urlError';
             break;
           default:
             watchedState.data.dataReceivingState = 'error';
-            watchedState.form.error = i18nextInstance.t('submitForm.networkError');
+            watchedState.form.error = 'submitForm.networkError';
         }
       });
   });
