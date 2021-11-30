@@ -166,11 +166,11 @@ const init = () => {
       .then(() => setTimeout(() => refreshFeed(url, watchedState), 5000))
       .catch((error) => {
         switch (error.type) {
-          case 'url':
+          case 'notRSS':
             watchedState.data.dataReceivingState = 'error';
             watchedState.form.error = 'submitForm.notRSS';
             break;
-          case 'notRSS':
+          case 'url':
             watchedState.form.formState = 'invalid';
             watchedState.form.error = 'submitForm.urlError';
             break;
