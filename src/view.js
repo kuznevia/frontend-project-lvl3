@@ -71,18 +71,18 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
     input.focus();
   }
 
-  if (path === 'posts') {
+  if (path.includes('posts')) {
     const posts = document.getElementById('posts');
     posts.innerHTML = '';
     const header = document.createElement('h3');
     header.textContent = 'Посты';
     posts.append(header);
-    value.forEach((values) => {
-      values.postList.forEach((post) => {
+    state.posts.forEach((post) => {
+      post.postList.forEach((postList) => {
         const link = document.createElement('a');
-        link.textContent = post.title;
-        link.href = post.link;
-        link.title = post.title;
+        link.textContent = postList.title;
+        link.href = postList.link;
+        link.title = postList.title;
         if (!state.readedPostTitles.includes(link.title)) {
           link.classList.add('fw-bold');
         }

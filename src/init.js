@@ -52,10 +52,9 @@ const getParseRSSdata = (response, url) => {
   return { post, feed };
 };
 
-const getUniquePosts = (oldPost, newPost) => {
-  const uniquePosts = newPost.postList.reduce((acc, node) => {
-    const post = oldPost.postList
-      .filter((targetNode) => targetNode.title === node.title);
+const getUniquePosts = (oldPosts, newPosts) => {
+  const uniquePosts = newPosts.reduce((acc, node) => {
+    const post = oldPosts.filter((targetNode) => targetNode.title === node.title);
     if (post.length === 0) {
       acc.push(node);
     }
@@ -64,7 +63,7 @@ const getUniquePosts = (oldPost, newPost) => {
   if (uniquePosts.length > 0) {
     return uniquePosts;
   }
-  return null;
+  return [];
 };
 
 const getRSSFeed = (url, state) => schema.validate(url)
@@ -87,18 +86,14 @@ const refreshFeed = (url, state) => {
     .then((response) => {
       const parsedRSSdata = getParseRSSdata(response, url);
       const { post } = parsedRSSdata;
-      const [oldPost] = state.posts.filter((node) => node.url === post.url);
-      const uniquePosts = getUniquePosts(oldPost, post);
-      if (uniquePosts !== null) {
-        state.posts.forEach((node) => {
-          if (node.url === url) {
-            node.postList.unshift(...uniquePosts);
-          }
-        });
+      const oldPost = state.posts.find((node) => node.url === post.url);
+      const uniquePosts = getUniquePosts(oldPost.postList, post.postList);
+      const targetPostIndex = state.posts.findIndex((elem) => elem.url === post.url);
+      if (uniquePosts.length > 0) {
+        state.posts[targetPostIndex].postList.unshift(...uniquePosts);
       }
     })
-    .then(() => setTimeout(() => refreshFeed(url, state), 5000))
-    .then(() => console.log(state));
+    .then(() => setTimeout(() => refreshFeed(url, state), 5000));
 };
 
 const init = () => {
