@@ -97,6 +97,21 @@ const refreshFeed = (url, state) => {
 };
 
 const init = () => {
+  const state = {
+    form: {
+      formState: 'filling',
+      error: null,
+    },
+    data: {
+      dataReceivingState: 'waiting',
+      error: null,
+    },
+    feeds: [],
+    posts: [],
+    readedPostTitles: [],
+    activePostTitle: null,
+  };
+
   const i18nextInstance = i18next.createInstance();
 
   i18nextInstance.init({
@@ -115,66 +130,50 @@ const init = () => {
         },
       },
     },
-  });
-
-  const state = {
-    form: {
-      formState: 'filling',
-      error: null,
-    },
-    data: {
-      dataReceivingState: 'waiting',
-      error: null,
-    },
-    feeds: [],
-    posts: [],
-    readedPostTitles: [],
-    activePostTitle: null,
-  };
-
-  const watchedState = watch(state, i18nextInstance);
-
-  const posts = document.getElementById('posts');
-  posts.addEventListener('click', (e) => {
-    if (e.target.className === 'btn btn-outline-primary') {
-      const parentRaw = e.target.parentNode.parentNode;
-      const link = parentRaw.querySelector('a');
-      if (!state.readedPostTitles.includes(link.title)) {
-        watchedState.readedPostTitles.push(link.title);
-      }
-      watchedState.activePostTitle = link.title;
-    }
-  });
-
-  const form = document.body.querySelector('#rss-form');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const url = formData.get('url');
-    const urls = state.feeds.map((feed) => feed.url);
-    if (urls.includes(url)) {
-      watchedState.form.formState = 'invalid';
-      watchedState.form.error = 'submitForm.alreadyExists';
-      return;
-    }
-    getRSSFeed(url, watchedState)
-      .then(() => setTimeout(() => refreshFeed(url, watchedState), 5000))
-      .catch((error) => {
-        switch (error.type) {
-          case 'notRSS':
-            watchedState.data.dataReceivingState = 'error';
-            watchedState.form.error = 'submitForm.notRSS';
-            break;
-          case 'url':
-            watchedState.form.formState = 'invalid';
-            watchedState.form.error = 'submitForm.urlError';
-            break;
-          default:
-            watchedState.data.dataReceivingState = 'error';
-            watchedState.form.error = 'submitForm.networkError';
+  })
+    .then(() => {
+      const watchedState = watch(state, i18nextInstance);
+      const posts = document.getElementById('posts');
+      posts.addEventListener('click', (e) => {
+        if (e.target.className === 'btn btn-outline-primary') {
+          const parentRaw = e.target.parentNode.parentNode;
+          const link = parentRaw.querySelector('a');
+          if (!state.readedPostTitles.includes(link.title)) {
+            watchedState.readedPostTitles.push(link.title);
+          }
+          watchedState.activePostTitle = link.title;
         }
       });
-  });
+      const form = document.body.querySelector('#rss-form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const url = formData.get('url');
+        const urls = state.feeds.map((feed) => feed.url);
+        if (urls.includes(url)) {
+          watchedState.form.formState = 'invalid';
+          watchedState.form.error = 'submitForm.alreadyExists';
+          return;
+        }
+        getRSSFeed(url, watchedState)
+          .then(() => setTimeout(() => refreshFeed(url, watchedState), 5000))
+          .catch((error) => {
+            switch (error.type) {
+              case 'notRSS':
+                watchedState.data.dataReceivingState = 'error';
+                watchedState.form.error = 'submitForm.notRSS';
+                break;
+              case 'url':
+                watchedState.form.formState = 'invalid';
+                watchedState.form.error = 'submitForm.urlError';
+                break;
+              default:
+                watchedState.data.dataReceivingState = 'error';
+                watchedState.form.error = 'submitForm.networkError';
+            }
+          });
+      });
+    });
 };
 
 export default init;
