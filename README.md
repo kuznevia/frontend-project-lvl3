@@ -1,4 +1,4 @@
-## Hexlet frontend project III (RSS feed reader with post autoupdate)
+## Hexlet frontend project III (RSS feed reader with posts autoupdate)
 
 ### Simple feed reader, collects RSS feeds and watches for new posts
 
