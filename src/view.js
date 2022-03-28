@@ -5,7 +5,7 @@ const changeFeedBack = {
     elem.classList.remove('text-success');
     elem.classList.add('text-danger');
   },
-  succsess: (elem) => {
+  success: (elem) => {
     elem.classList.remove('text-danger');
     elem.classList.add('text-success');
   },
@@ -63,7 +63,7 @@ export default (state, i18nextInstance) => onChange(state, (path, value) => {
       feeds.append(description);
     });
     const feedback = document.querySelector('.feedback');
-    changeFeedBack.succsess(feedback);
+    changeFeedBack.success(feedback);
     feedback.textContent = i18nextInstance.t('submitForm.added');
     const form = document.getElementById('rss-form');
     const input = document.getElementById('url-input');
