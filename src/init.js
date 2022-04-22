@@ -6,7 +6,7 @@ import watch from './view.js';
 const schema = yup.string().url();
 
 const getProxyUrl = (url) => {
-  const proxy = 'https://hexlet-allorigins.herokuapp.com/get?';
+  const proxy = 'https://allorigins.hexlet.app/get?';
   const proxyUrl = new URL(proxy);
   const params = new URLSearchParams(proxyUrl);
   params.append('disableCache', true);
